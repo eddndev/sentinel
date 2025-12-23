@@ -4,7 +4,7 @@ import { StepProcessor } from "./processors/StepProcessor";
 
 // Redis config is handled internally by QueueService/index usually, 
 // but Workers need a connection definition.
-const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+const REDIS_URL = process.env['REDIS_URL'] || "redis://localhost:6379";
 
 export const startSentinelWorker = () => {
     console.log(`[Worker] Starting Sentinel Worker on queue: ${QUEUE_NAME}`);

@@ -10,8 +10,7 @@ class QueueService {
         // Reuse the internal IORedis connection if possible, or let BullMQ handle it
         this.queue = new Queue(QUEUE_NAME, {
             connection: {
-                host: "localhost", // TODO: Use env
-                port: 6379
+                url: process.env['REDIS_URL'] || "redis://localhost:6379"
             }
         });
     }

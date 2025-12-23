@@ -7,12 +7,15 @@ WORKDIR /usr/src/app
 FROM base AS install
 RUN mkdir -p /temp/dev
 COPY backend/package.json backend/bun.lock? /temp/dev/
+COPY backend/prisma /temp/dev/prisma
 RUN cd /temp/dev && bun install
 
 # install with --production (exclude devDependencies)
 RUN mkdir -p /temp/prod
 COPY backend/package.json backend/bun.lock? /temp/prod/
+COPY backend/prisma /temp/prod/prisma
 RUN cd /temp/prod && bun install --production
+RUN cd /temp/prod && bunx prisma generate
 
 # copy node_modules from temp directory
 # then copy all (non-ignored) project files into the image
