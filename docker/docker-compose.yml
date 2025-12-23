@@ -13,6 +13,8 @@ services:
       - postgres
     networks:
       - sentinel-net
+    volumes:
+      - ../uploads:/usr/src/app/uploads
 
   frontend:
     image: nginx:alpine
