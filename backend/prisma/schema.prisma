@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 enum Platform {
@@ -22,28 +21,121 @@ enum SessionStatus {
   FAILED
 }
 
+enum MatchType {
+  EXACT
+  CONTAINS
+  REGEX
+}
+
+enum StepType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  PTT // "Voice Note" (Push-To-Talk) simulation
+}
+
 model Session {
   id            String        @id @default(uuid())
   platform      Platform
   identifier    String        @unique // e.g., phone number or bot token
   name          String?
   status        SessionStatus @default(DISCONNECTED)
-  authData      Json?         // Stores session creds/tokens
+  authData      Json?         // Stores session creds/tokens (Buffer/String)
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   
   messages      Message[]
+  triggers      Trigger[]
+  executions    Execution[]
+}
+
+model Trigger {
+  id          String    @id @default(uuid())
+  sessionId   String
+  session     Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  keyword     String    // The activation phrase or pattern
+  matchType   MatchType @default(CONTAINS)
+  
+  isActive    Boolean   @default(true)
+  usageLimit  Int       @default(0) // 0 = Infinite global executions
+  cooldownMs  Int       @default(0) // Minimum time between activations
+  
+  flowId      String
+  flow        Flow      @relation(fields: [flowId], references: [id])
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Flow {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  
+  steps       Step[]
+  triggers    Trigger[]
+  executions  Execution[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Step {
+  id          String   @id @default(uuid())
+  flowId      String
+  flow        Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
+  
+  type        StepType
+  content     String?  @db.Text
+  mediaUrl    String?  // URL or Local Path
+  metadata    Json?    // Extra config (e.g., caption for image)
+  
+  delayMs     Int      @default(1000) // Base delay
+  jitterPct   Int      @default(10)   // Random deviation percentage
+  
+  order       Int      // Sequential order 0, 1, 2...
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([flowId, order])
+}
+
+model Execution {
+  id              String   @id @default(uuid())
+  sessionId       String
+  session         Session  @relation(fields: [sessionId], references: [id])
+  flowId          String
+  flow            Flow     @relation(fields: [flowId], references: [id])
+  
+  platformUserId  String   // The external user ID participating in the flow
+  status          String   @default("RUNNING") // RUNNING, COMPLETED, FAILED, PAUSED
+  currentStep     Int      @default(0)
+  
+  variableContext Json?    // Values captured during this execution
+  
+  startedAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  @@index([sessionId, platformUserId])
+  @@index([status])
 }
 
 model Message {
   id            String   @id @default(uuid())
-  externalId    String   @unique // The ID from WhatsApp/Telegram (Crucial for deduplication)
+  externalId    String   @unique 
   sessionId     String
   session       Session  @relation(fields: [sessionId], references: [id])
-  sender        String   // Sender identifier
+  
+  sender        String   
   content       String?  @db.Text
-  type          String   // text, image, video, document
-  metadata      Json?    // Raw message data if needed
+  type          String   
+  metadata      Json?    
+  
   isProcessed   Boolean  @default(false)
   createdAt     DateTime @default(now())
 
