@@ -16,20 +16,9 @@ redis.on("error", (err) => console.error("Redis Client Error", err));
 redis.on("connect", () => console.log("Redis Connected"));
 
 // --- Workers ---
-const messageWorker = new Worker("messages", async (job) => {
-    console.log(`Processing message job ${job.id}`, job.data);
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 500));
-    return { status: "sent", timestamp: Date.now() };
-}, { connection: redis });
-
-messageWorker.on("completed", (job) => {
-    console.log(`Job ${job.id} has completed!`);
-});
-
-messageWorker.on("failed", (job, err) => {
-    console.log(`Job ${job.id} has failed with ${err.message}`);
-});
+// --- Workers ---
+import { startSentinelWorker } from "./workers/message.worker";
+const worker = startSentinelWorker();
 
 // --- API ---
 const app = new Elysia()

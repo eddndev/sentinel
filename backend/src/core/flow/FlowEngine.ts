@@ -86,4 +86,18 @@ export class FlowEngine {
 
         await queueService.scheduleStepExecution(executionId, step.id, finalDelay);
     }
+
+    /**
+     * Called by the Worker when a step is successfully processed.
+     * Advances to the next step in the sequence.
+     */
+    async completeStep(executionId: string, currentStepOrder: number) {
+        console.log(`[FlowEngine] Completing Step ${currentStepOrder} for Execution ${executionId}`);
+
+        // Update DB (Optional: track per-step completion time or logs)
+        // await prisma.executionStepLog.create(...) 
+
+        // Schedule next
+        await this.scheduleStep(executionId, currentStepOrder + 1);
+    }
 }
