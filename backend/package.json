@@ -9,10 +9,10 @@
         "test": "bun test"
     },
     "dependencies": {
+        "@prisma/client": "latest",
+        "bullmq": "^5.66.2",
         "elysia": "latest",
         "ioredis": "latest",
-        "bullmq": "latest",
-        "@prisma/client": "latest",
         "prisma": "^7.2.0"
     },
     "devDependencies": {

@@ -6,7 +6,7 @@
       "name": "sentinel-backend",
       "dependencies": {
         "@prisma/client": "latest",
-        "bullmq": "latest",
+        "bullmq": "^5.66.2",
         "elysia": "latest",
         "ioredis": "latest",
         "prisma": "^7.2.0",
