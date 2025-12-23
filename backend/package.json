@@ -1,0 +1,21 @@
+{
+    "name": "sentinel-backend",
+    "module": "src/index.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "bun run --watch src/index.ts",
+        "build": "bun build ./src/index.ts --outdir ./dist --target bun",
+        "start": "bun run dist/index.js",
+        "test": "bun test"
+    },
+    "dependencies": {
+        "elysia": "latest",
+        "ioredis": "latest",
+        "bullmq": "latest",
+        "@prisma/client": "latest",
+        "prisma": "latest"
+    },
+    "devDependencies": {
+        "bun-types": "latest"
+    }
+}

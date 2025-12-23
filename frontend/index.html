@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+    <title>Sentinel Dashboard</title>
+  </head>
+  <body class="bg-gray-950 text-gray-100 antialiased font-sans flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 border-r border-gray-800 bg-gray-900/50 flex flex-col">
+      <div class="h-16 flex items-center px-6 border-b border-gray-800">
+        <div class="flex items-center gap-2 text-indigo-500 font-bold text-xl tracking-tight">
+          <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+          </svg>
+          SENTINEL
+        </div>
+      </div>
+      <nav class="flex-1 p-4 space-y-1">
+        <a href="#" class="block px-4 py-2 rounded bg-indigo-500/10 text-indigo-400 font-medium">Dashboard</a>
+        <a href="#" class="block px-4 py-2 rounded hover:bg-gray-800 text-gray-400 font-medium">Sessions</a>
+        <a href="#" class="block px-4 py-2 rounded hover:bg-gray-800 text-gray-400 font-medium">Logs</a>
+      </nav>
+      <div class="p-4 border-t border-gray-800">
+        <div class="flex items-center gap-3">
+          <div class="size-8 rounded-full bg-gray-700"></div>
+          <div class="text-sm">
+            <p class="font-medium">Admin</p>
+            <p class="text-gray-500 text-xs">Online</p>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <!-- Header -->
+      <header class="h-16 border-b border-gray-800 flex items-center justify-between px-6 bg-gray-900/50">
+        <h1 class="text-lg font-semibold text-white">System Status</h1>
+      </header>
+
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-auto p-6">
+        
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="p-6 rounded-xl border border-gray-800 bg-gray-900/30">
+            <p class="text-sm text-gray-400 mb-1">Active Sessions</p>
+            <p class="text-3xl font-bold text-white">24</p>
+          </div>
+          <div class="p-6 rounded-xl border border-gray-800 bg-gray-900/30">
+            <p class="text-sm text-gray-400 mb-1">Messages Processed</p>
+            <p class="text-3xl font-bold text-white">14,205</p>
+          </div>
+          <div class="p-6 rounded-xl border border-gray-800 bg-gray-900/30">
+            <p class="text-sm text-gray-400 mb-1">Queue Size</p>
+            <p class="text-3xl font-bold text-emerald-400">0</p>
+          </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="border border-gray-800 rounded-xl overflow-hidden bg-gray-900/30">
+          <div class="px-6 py-4 border-b border-gray-800">
+            <h2 class="font-semibold text-white">Recent Commands</h2>
+          </div>
+          <table class="w-full text-left text-sm text-gray-400">
+            <thead>
+              <tr class="bg-gray-800/50 text-gray-300">
+                <th class="px-6 py-3 font-medium">Command ID</th>
+                <th class="px-6 py-3 font-medium">User</th>
+                <th class="px-6 py-3 font-medium">Status</th>
+                <th class="px-6 py-3 font-medium text-right">Time</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800">
+              <tr class="hover:bg-gray-800/30">
+                <td class="px-6 py-3 font-mono text-gray-500">#CMD-9923</td>
+                <td class="px-6 py-3">user_123</td>
+                <td class="px-6 py-3"><span class="px-2 py-1 rounded text-xs font-medium bg-emerald-500/10 text-emerald-400">Completed</span></td>
+                <td class="px-6 py-3 text-right">2m ago</td>
+              </tr>
+              <tr class="hover:bg-gray-800/30">
+                <td class="px-6 py-3 font-mono text-gray-500">#CMD-9922</td>
+                <td class="px-6 py-3">user_456</td>
+                <td class="px-6 py-3"><span class="px-2 py-1 rounded text-xs font-medium bg-amber-500/10 text-amber-400">Pending</span></td>
+                <td class="px-6 py-3 text-right">5m ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
