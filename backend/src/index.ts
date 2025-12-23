@@ -21,7 +21,10 @@ import { startSentinelWorker } from "./workers/message.worker";
 const worker = startSentinelWorker();
 
 // --- API ---
+import { webhookController } from "./api/webhook.controller";
+
 const app = new Elysia()
+    .use(webhookController)
     .get("/", () => "Sentinel Orchestrator Active")
     .get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }))
     .get("/info", () => ({
