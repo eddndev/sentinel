@@ -6,7 +6,7 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
-        host: true, // Needed for Docker
+        host: true,
         port: 3000
     }
 });
