@@ -25,5 +25,6 @@ export const es = {
     cancel: "Cancelar",
     create: "Crear",
     creating: "Creando...",
-    fill_all_fields: "Por favor llena todos los campos"
+    fill_all_fields: "Por favor llena todos los campos",
+    settings: "Configuración"
 };

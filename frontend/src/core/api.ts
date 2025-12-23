@@ -27,4 +27,20 @@ export class ApiClient {
         });
         return res.json();
     }
+
+    static async put(path: string, body: any) {
+        const res = await fetch(`${this.BASE_URL}${path}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+        return res.json();
+    }
+
+    static async delete(path: string) {
+        const res = await fetch(`${this.BASE_URL}${path}`, {
+            method: "DELETE"
+        });
+        return res.json();
+    }
 }

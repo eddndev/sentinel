@@ -25,5 +25,6 @@ export const en = {
     cancel: "Cancel",
     create: "Create",
     creating: "Creating...",
-    fill_all_fields: "Please fill all fields"
+    fill_all_fields: "Please fill all fields",
+    settings: "Settings"
 };

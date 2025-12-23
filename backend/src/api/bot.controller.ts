@@ -40,4 +40,34 @@ export const botController = new Elysia({ prefix: "/bots" })
             identifier: t.String(),
             platform: t.Optional(t.String())
         })
+    })
+    .put("/:id", async ({ params: { id }, body, set }) => {
+        const { name, identifier, platform, credentials } = body as any;
+
+        try {
+            const bot = await prisma.bot.update({
+                where: { id },
+                data: {
+                    name,
+                    identifier,
+                    platform: platform as Platform,
+                    credentials: credentials || undefined
+                }
+            });
+            return bot;
+        } catch (e: any) {
+            set.status = 500;
+            return "Failed to update bot";
+        }
+    })
+    .delete("/:id", async ({ params: { id }, set }) => {
+        try {
+            await prisma.bot.delete({
+                where: { id }
+            });
+            return { success: true };
+        } catch (e) {
+            set.status = 500;
+            return "Failed to delete bot";
+        }
     });
