@@ -16,17 +16,33 @@ export class FlowEngine {
     async processIncomingMessage(sessionId: string, message: Message) {
         if (!message.content) return;
 
-        // 1. Check if user has an active execution (Stateful bot)
-        // TODO: Implement "Resume Flow" logic here for branching questions
+        // 1. Fetch Session to get Bot Context
+        const session = await prisma.session.findUnique({
+            where: { id: sessionId },
+            select: { botId: true }
+        });
 
-        // 2. If no active state, check for Triggers (Stateless entry)
+        if (!session) {
+            console.error(`[FlowEngine] Session ${sessionId} not found`);
+            return;
+        }
+
+        // 2. Check Triggers (Session-Specific OR Global Bot Triggers)
         const activeTriggers = await prisma.trigger.findMany({
-            where: { sessionId, isActive: true },
+            where: {
+                isActive: true,
+                OR: [
+                    { sessionId: sessionId },                   // Specific to this user session
+                    { botId: session.botId, sessionId: null }   // Global for the bot
+                ]
+            },
+            include: { flow: true } // Include flow to log name if matched
         });
 
         const match = TriggerMatcher.findMatch(message.content, activeTriggers);
 
         if (match) {
+            console.log(`[FlowEngine] Matched Trigger '${match.trigger.keyword}' -> Flow ${match.trigger.flowId}`);
             await this.startFlow(match.trigger, message.sender, sessionId);
         }
     }

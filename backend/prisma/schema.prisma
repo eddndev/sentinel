@@ -38,32 +38,57 @@ enum StepType {
   PTT // "Voice Note" (Push-To-Talk) simulation
 }
 
+model Bot {
+  id          String   @id @default(uuid())
+  name        String
+  platform    Platform
+  identifier  String   @unique // Phone number (WhatsApp) or Token (Telegram)
+  credentials Json?    // { apiKey, webhookVerifyToken, etc. }
+  
+  flows       Flow[]
+  sessions    Session[]
+  triggers    Trigger[] // Global triggers for this bot
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Session {
   id            String        @id @default(uuid())
   platform      Platform
-  identifier    String        @unique // e.g., phone number or bot token
+  identifier    String        // User phone/id. NOTE: Not unique globally anymore, only unique per Bot
+  
+  botId         String
+  bot           Bot           @relation(fields: [botId], references: [id], onDelete: Cascade)
+
   name          String?
   status        SessionStatus @default(DISCONNECTED)
-  authData      Json?         // Stores session creds/tokens (Buffer/String)
+  authData      Json?         
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   
   messages      Message[]
   triggers      Trigger[]
   executions    Execution[]
+
+  @@unique([botId, identifier]) // Unique user per bot
 }
 
 model Trigger {
   id          String    @id @default(uuid())
-  sessionId   String
-  session     Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   
-  keyword     String    // The activation phrase or pattern
+  botId       String
+  bot         Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  sessionId   String?   // Optional: If set, purely local to a session. If null, global for the bot.
+  session     Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  keyword     String    
   matchType   MatchType @default(CONTAINS)
   
   isActive    Boolean   @default(true)
-  usageLimit  Int       @default(0) // 0 = Infinite global executions
-  cooldownMs  Int       @default(0) // Minimum time between activations
+  usageLimit  Int       @default(0) 
+  cooldownMs  Int       @default(0) 
   
   flowId      String
   flow        Flow      @relation(fields: [flowId], references: [id])
@@ -74,6 +99,10 @@ model Trigger {
 
 model Flow {
   id          String    @id @default(uuid())
+  
+  botId       String
+  bot         Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+
   name        String
   description String?
   
@@ -92,13 +121,13 @@ model Step {
   
   type        StepType
   content     String?  @db.Text
-  mediaUrl    String?  // URL or Local Path
-  metadata    Json?    // Extra config (e.g., caption for image)
+  mediaUrl    String?  
+  metadata    Json?    
   
-  delayMs     Int      @default(1000) // Base delay
-  jitterPct   Int      @default(10)   // Random deviation percentage
+  delayMs     Int      @default(1000) 
+  jitterPct   Int      @default(10)   
   
-  order       Int      // Sequential order 0, 1, 2...
+  order       Int      
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -113,11 +142,11 @@ model Execution {
   flowId          String
   flow            Flow     @relation(fields: [flowId], references: [id])
   
-  platformUserId  String   // The external user ID participating in the flow
-  status          String   @default("RUNNING") // RUNNING, COMPLETED, FAILED, PAUSED
+  platformUserId  String   
+  status          String   @default("RUNNING") 
   currentStep     Int      @default(0)
   
-  variableContext Json?    // Values captured during this execution
+  variableContext Json?    
   
   startedAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt

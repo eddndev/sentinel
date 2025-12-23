@@ -11,10 +11,24 @@ CREATE TYPE "MatchType" AS ENUM ('EXACT', 'CONTAINS', 'REGEX');
 CREATE TYPE "StepType" AS ENUM ('TEXT', 'IMAGE', 'AUDIO', 'VIDEO', 'DOCUMENT', 'PTT');
 
 -- CreateTable
+CREATE TABLE "Bot" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "platform" "Platform" NOT NULL,
+    "identifier" TEXT NOT NULL,
+    "credentials" JSONB,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Bot_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Session" (
     "id" TEXT NOT NULL,
     "platform" "Platform" NOT NULL,
     "identifier" TEXT NOT NULL,
+    "botId" TEXT NOT NULL,
     "name" TEXT,
     "status" "SessionStatus" NOT NULL DEFAULT 'DISCONNECTED',
     "authData" JSONB,
@@ -27,7 +41,8 @@ CREATE TABLE "Session" (
 -- CreateTable
 CREATE TABLE "Trigger" (
     "id" TEXT NOT NULL,
-    "sessionId" TEXT NOT NULL,
+    "botId" TEXT NOT NULL,
+    "sessionId" TEXT,
     "keyword" TEXT NOT NULL,
     "matchType" "MatchType" NOT NULL DEFAULT 'CONTAINS',
     "isActive" BOOLEAN NOT NULL DEFAULT true,
@@ -43,6 +58,7 @@ CREATE TABLE "Trigger" (
 -- CreateTable
 CREATE TABLE "Flow" (
     "id" TEXT NOT NULL,
+    "botId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -112,7 +128,10 @@ CREATE TABLE "CommandLog" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Session_identifier_key" ON "Session"("identifier");
+CREATE UNIQUE INDEX "Bot_identifier_key" ON "Bot"("identifier");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Session_botId_identifier_key" ON "Session"("botId", "identifier");
 
 -- CreateIndex
 CREATE INDEX "Step_flowId_order_idx" ON "Step"("flowId", "order");
@@ -133,10 +152,19 @@ CREATE INDEX "Message_externalId_idx" ON "Message"("externalId");
 CREATE INDEX "Message_sessionId_idx" ON "Message"("sessionId");
 
 -- AddForeignKey
+ALTER TABLE "Session" ADD CONSTRAINT "Session_botId_fkey" FOREIGN KEY ("botId") REFERENCES "Bot"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Trigger" ADD CONSTRAINT "Trigger_botId_fkey" FOREIGN KEY ("botId") REFERENCES "Bot"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Trigger" ADD CONSTRAINT "Trigger_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Session"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Trigger" ADD CONSTRAINT "Trigger_flowId_fkey" FOREIGN KEY ("flowId") REFERENCES "Flow"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Flow" ADD CONSTRAINT "Flow_botId_fkey" FOREIGN KEY ("botId") REFERENCES "Bot"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Step" ADD CONSTRAINT "Step_flowId_fkey" FOREIGN KEY ("flowId") REFERENCES "Flow"("id") ON DELETE CASCADE ON UPDATE CASCADE;

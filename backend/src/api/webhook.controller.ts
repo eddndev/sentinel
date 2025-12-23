@@ -18,24 +18,44 @@ export const webhookController = new Elysia({ prefix: "/webhook" })
         console.log(`[Webhook] Received ${type} from ${from} on ${platformEnum}`);
 
         try {
-            // 1. Resolve Session
-            let session = await prisma.session.findFirst({
-                where: { platform: platformEnum, status: SessionStatus.CONNECTED }
+            // 1. Resolve Bot (Target System)
+            // For now, accept 'botId' in body, or default to the Seed Bot
+            const botIdentifier = (body as any).botId || "SENTINEL_DEMO_BOT";
+
+            const bot = await prisma.bot.findUnique({
+                where: { identifier: botIdentifier }
+            });
+
+            if (!bot) {
+                set.status = 404;
+                return `Bot '${botIdentifier}' not found`;
+            }
+
+            // 2. Resolve Session (User Connection)
+            // Session is now the USER's session with the specific BOT
+            let session = await prisma.session.findUnique({
+                where: {
+                    botId_identifier: {
+                        botId: bot.id,
+                        identifier: from // User's ID (Phone)
+                    }
+                }
             });
 
             if (!session) {
-                // Auto-provision a "Demo Bot" session if none exists
+                console.log(`[Webhook] New Session for user ${from} on bot ${bot.name}`);
                 session = await prisma.session.create({
                     data: {
+                        botId: bot.id,
                         platform: platformEnum,
-                        identifier: "DEMO_BOT_01",
-                        name: "Sentinel Demo Bot",
+                        identifier: from,
+                        name: `User ${from}`, // We don't know name yet
                         status: SessionStatus.CONNECTED
                     }
                 });
             }
 
-            // 2. Persist Message
+            // 3. Persist Message
             const message = await prisma.message.create({
                 data: {
                     externalId: `msg_${Date.now()}_${Math.random()}`,
@@ -47,12 +67,12 @@ export const webhookController = new Elysia({ prefix: "/webhook" })
                 }
             });
 
-            // 3. Process with Flow Engine
+            // 4. Process with Flow Engine
             flowEngine.processIncomingMessage(session.id, message).catch(err => {
                 console.error("[Webhook] Flow Engine Error:", err);
             });
 
-            return { status: "received", messageId: message.id };
+            return { status: "received", messageId: message.id, bot: bot.name };
 
         } catch (err: any) {
             console.error("[Webhook] Error:", err);

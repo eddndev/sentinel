@@ -5,23 +5,44 @@ const prisma = new PrismaClient();
 async function main() {
     console.log("🌱 Seeding Test Data...");
 
-    // 1. Ensure Session Exists
-    const session = await prisma.session.upsert({
-        where: { identifier: "DEMO_BOT_01" },
+    // 1. Ensure Bot Exists
+    const bot = await prisma.bot.upsert({
+        where: { identifier: "SENTINEL_DEMO_BOT" },
         update: {},
         create: {
+            name: "Sentinel Demo",
             platform: Platform.WHATSAPP,
-            identifier: "DEMO_BOT_01",
-            name: "Sentinel Demo Bot",
+            identifier: "SENTINEL_DEMO_BOT",
+            credentials: { token: "demo_token" }
+        }
+    });
+
+    console.log(`✅ Bot: ${bot.name} (${bot.id})`);
+
+    // 2. Ensure User Session Exists (Linked to Bot)
+    const session = await prisma.session.upsert({
+        where: {
+            botId_identifier: {
+                botId: bot.id,
+                identifier: "5215551234567" // Real phone format example
+            }
+        },
+        update: {},
+        create: {
+            botId: bot.id,
+            platform: Platform.WHATSAPP,
+            identifier: "5215551234567",
+            name: "Test User",
             status: SessionStatus.CONNECTED
         }
     });
 
     console.log(`✅ Session: ${session.name} (${session.id})`);
 
-    // 2. Create the Flow
+    // 3. Create the Flow (Linked to Bot)
     const flow = await prisma.flow.create({
         data: {
+            botId: bot.id,
             name: "Welcome Flow",
             description: "Triggered by greeting"
         }
@@ -29,10 +50,11 @@ async function main() {
 
     console.log(`✅ Flow: ${flow.name} (${flow.id})`);
 
-    // 3. Create Trigger
+    // 4. Create GLOBAL Trigger (Linked to Bot, No Session)
     await prisma.trigger.create({
         data: {
-            sessionId: session.id,
+            botId: bot.id,
+            sessionId: null, // Global!
             flowId: flow.id,
             keyword: "hola",
             matchType: MatchType.CONTAINS,
@@ -40,9 +62,9 @@ async function main() {
         }
     });
 
-    console.log(`✅ Trigger: 'hola' -> Flow`);
+    console.log(`✅ Global Trigger: 'hola' -> Flow`);
 
-    // 4. Create Steps
+    // 5. Create Steps
     // Step 1: Text Greeting
     await prisma.step.create({
         data: {
