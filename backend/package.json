@@ -9,6 +9,7 @@
         "test": "bun test"
     },
     "dependencies": {
+        "@elysiajs/cors": "^1.4.0",
         "@prisma/client": "5.12.0",
         "bullmq": "^5.66.2",
         "elysia": "latest",

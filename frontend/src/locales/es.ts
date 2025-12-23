@@ -1,0 +1,21 @@
+export const es = {
+    dashboard: "Panel de Control",
+    flows: "Flujos",
+    uploads: "Archivos",
+    execution_history: "Historial",
+    status: "Estado",
+    language: "Idioma",
+    upload_file: "Subir Archivo",
+    drop_file: "Arrastra un archivo aquí o haz clic",
+    filename: "Nombre de archivo",
+    actions: "Acciones",
+    view: "Ver",
+    copy_url: "Copiar URL",
+    trigger_test: "Probar Trigger",
+    send: "Enviar",
+    message: "Mensaje",
+    phone_number: "Número de teléfono",
+    simulating: "Simulando...",
+    success: "Éxito",
+    error: "Error"
+};

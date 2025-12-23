@@ -1,0 +1,21 @@
+export const en = {
+    dashboard: "Dashboard",
+    flows: "Flows",
+    uploads: "Uploads",
+    execution_history: "History",
+    status: "Status",
+    language: "Language",
+    upload_file: "Upload File",
+    drop_file: "Drop file here or click",
+    filename: "Filename",
+    actions: "Actions",
+    view: "View",
+    copy_url: "Copy URL",
+    trigger_test: "Trigger Test",
+    send: "Send",
+    message: "Message",
+    phone_number: "Phone Number",
+    simulating: "Simulating...",
+    success: "Success",
+    error: "Error"
+};
