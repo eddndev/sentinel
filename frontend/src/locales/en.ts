@@ -17,5 +17,13 @@ export const en = {
     phone_number: "Phone Number",
     simulating: "Simulating...",
     success: "Success",
-    error: "Error"
+    error: "Error",
+    create_bot: "Create Bot",
+    create_bot_title: "Create New Bot",
+    bot_name: "Bot Name",
+    bot_identifier: "Identifier (Phone/Token)",
+    cancel: "Cancel",
+    create: "Create",
+    creating: "Creating...",
+    fill_all_fields: "Please fill all fields"
 };

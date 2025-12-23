@@ -1,5 +1,6 @@
 import { i18n } from "../core/i18n";
 import { ApiClient } from "../core/api";
+import { botStore } from "../core/bot.store";
 
 export const FlowList = () => {
     const container = document.createElement("div");
@@ -28,10 +29,21 @@ export const FlowList = () => {
     updateTexts();
 
     const loadFlows = async () => {
-        list.innerHTML = `<div class="text-center text-gray-400 py-4">Loading...</div>`;
+        const currentBot = botStore.getCurrentBot(); // Import botStore at top!
+        if (!currentBot) {
+            list.innerHTML = `<div class="text-center text-gray-400 py-4">Select a bot</div>`;
+            return;
+        }
+
+        list.innerHTML = `<div class="text-center text-gray-400 py-4">Loading flows for ${currentBot.name}...</div>`;
         try {
-            const flows = await ApiClient.get("/flows");
+            const flows = await ApiClient.get(`/flows?botId=${currentBot.id}`);
             list.innerHTML = "";
+
+            if (flows.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-400 py-4">No flows found</div>`;
+                return;
+            }
 
             flows.forEach((flow: any) => {
                 const card = document.createElement("div");
@@ -63,11 +75,7 @@ export const FlowList = () => {
                 // Bind Trigger 
                 const triggerBtn = card.querySelector("button");
                 if (triggerBtn) {
-                    triggerBtn.textContent = i18n.t("trigger_test"); // Initial set
-                    // Subscribe to update button text text dynamic? 
-                    // Ideally we re-render or bind specific node. 
-                    // For simplicity, we just reload whole list on lang change? No, too expensive.
-                    // We just won't update individual dynamic list items texts for now or rely on reload.
+                    triggerBtn.textContent = i18n.t("trigger_test");
                 }
 
                 list.appendChild(card);
@@ -78,10 +86,12 @@ export const FlowList = () => {
     };
 
     refreshBtn.onclick = loadFlows;
-    loadFlows();
 
-    // Re-fetch on language change? maybe overkill.
-    // i18n.subscribe(loadFlows);
+    // Subscribe to Bot Changes!
+    botStore.subscribe(loadFlows);
+    // Initial loaded by subscription if Store is waiting for init? 
+    // Or we manually call it if store is ready.
+    if (botStore.getCurrentBot()) loadFlows();
 
     container.appendChild(header);
     container.appendChild(list);

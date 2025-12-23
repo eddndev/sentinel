@@ -2,8 +2,12 @@ import "./style.css";
 import { Navbar } from "./components/Navbar";
 import { UploadManager } from "./components/UploadManager";
 import { FlowList } from "./components/FlowList";
+import { botStore } from "./core/bot.store";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
+
+// Init Store
+botStore.init();
 
 const layout = () => {
     app.innerHTML = "";

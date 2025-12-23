@@ -1,4 +1,5 @@
 import { i18n } from "../core/i18n";
+import { BotSelector } from "./BotSelector";
 
 export const Navbar = () => {
     const nav = document.createElement("nav");
@@ -15,6 +16,9 @@ export const Navbar = () => {
 
     const controls = document.createElement("div");
     controls.className = "flex items-center gap-4";
+
+    // Bot Selector
+    controls.appendChild(BotSelector());
 
     // Language Toggle
     const langBtn = document.createElement("button");
