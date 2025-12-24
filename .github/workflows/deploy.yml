@@ -29,6 +29,14 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}/app:latest
 
+      - name: Build and Push Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/frontend.Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/frontend:latest
+
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
@@ -60,6 +68,7 @@ jobs:
             echo "DATABASE_URL=postgresql://user:${{ secrets.DB_ROOT_PASSWORD }}@postgres:5432/sentinel" > .env
             echo "REDIS_URL=redis://redis:6379" >> .env
             echo "APP_IMAGE=ghcr.io/${{ github.repository }}/app:latest" >> .env
+            echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/frontend:latest" >> .env
             
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
             

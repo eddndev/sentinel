@@ -18,20 +18,19 @@ services:
       - baileys_auth:/usr/src/app/auth_info_baileys
 
   frontend:
-    image: nginx:alpine
-    volumes:
-      - ../frontend/dist:/usr/share/nginx/html
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-    ports:
-      - "3000:80"
+    image: ${FRONTEND_IMAGE:-sentinel-frontend}
+    build:
+      context: ../
+      dockerfile: docker/frontend.Dockerfile
     networks:
       - sentinel-net
+      - proxy-net
+    depends_on:
+      - app
 
   redis:
     image: redis:7-alpine
     command: redis-server --appendonly yes
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
