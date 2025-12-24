@@ -39,6 +39,7 @@ import { webhookController } from "./api/webhook.controller";
 import { uploadController } from "./api/upload.controller";
 import { flowController } from "./api/flow.controller";
 import { botController } from "./api/bot.controller";
+import { triggerController } from "./api/trigger.controller";
 
 import { cors } from "@elysiajs/cors";
 
@@ -48,6 +49,7 @@ const app = new Elysia()
     .use(uploadController)
     .use(flowController)
     .use(botController)
+    .use(triggerController)
     .get("/", () => "Sentinel Orchestrator Active")
     .get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }))
     .get("/info", () => ({

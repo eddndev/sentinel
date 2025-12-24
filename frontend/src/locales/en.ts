@@ -11,7 +11,7 @@ export const en = {
     actions: "Actions",
     view: "View",
     copy_url: "Copy URL",
-    trigger_test: "Trigger Test",
+    trigger_test: "Test Trigger",
     send: "Send",
     message: "Message",
     phone_number: "Phone Number",

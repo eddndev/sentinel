@@ -12,12 +12,22 @@ export const FlowList = () => {
     const title = document.createElement("h2");
     title.className = "text-lg font-semibold text-gray-800";
 
+    const actions = document.createElement("div");
+    actions.className = "flex items-center gap-2";
+
+    const newBtn = document.createElement("button");
+    newBtn.innerHTML = `+ New Flow`;
+    newBtn.className = "text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium";
+
     const refreshBtn = document.createElement("button");
     refreshBtn.innerHTML = `↺`;
     refreshBtn.className = "p-2 hover:bg-gray-100 rounded-full text-gray-500";
 
+    actions.appendChild(newBtn);
+    actions.appendChild(refreshBtn);
+
     header.appendChild(title);
-    header.appendChild(refreshBtn);
+    header.appendChild(actions);
 
     const list = document.createElement("div");
     list.className = "space-y-4";
@@ -66,23 +76,36 @@ export const FlowList = () => {
                         ${stepsHtml}
                     </div>
                     <div class="mt-4 pt-3 border-t border-gray-50 flex justify-end gap-2">
-                        <button class="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition-colors" onclick="alert('Trigger ${flow.id}')">
+                        <button id="editBtn" class="text-xs px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded transition-colors">
+                            Edit
+                        </button>
+                        <button id="triggerBtn" class="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition-colors">
                             ${i18n.t("trigger_test")}
                         </button>
                     </div>
                 `;
 
-                // Bind Trigger 
-                const triggerBtn = card.querySelector("button");
-                if (triggerBtn) {
-                    triggerBtn.textContent = i18n.t("trigger_test");
-                }
+                // Bind actions
+                const editBtn = card.querySelector("#editBtn") as HTMLButtonElement;
+                const triggerBtn = card.querySelector("#triggerBtn") as HTMLButtonElement;
+
+                editBtn.onclick = () => {
+                    import("./FlowEditorModal").then(m => m.openFlowEditor(flow));
+                };
+
+                triggerBtn.onclick = () => {
+                    alert(`Triggering test for ${flow.name}`);
+                };
 
                 list.appendChild(card);
             });
         } catch (e) {
             list.innerHTML = `<div class="text-red-500 text-center py-4">Failed to load flows</div>`;
         }
+    };
+
+    newBtn.onclick = () => {
+        import("./FlowEditorModal").then(m => m.openFlowEditor(null));
     };
 
     refreshBtn.onclick = loadFlows;

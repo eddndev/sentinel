@@ -47,6 +47,10 @@ class BotStore {
         return () => this.listeners = this.listeners.filter(l => l !== cb);
     }
 
+    refresh() {
+        this.notify();
+    }
+
     private notify() {
         this.listeners.forEach(cb => cb());
     }

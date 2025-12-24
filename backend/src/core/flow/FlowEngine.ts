@@ -42,8 +42,38 @@ export class FlowEngine {
         const match = TriggerMatcher.findMatch(message.content, activeTriggers);
 
         if (match) {
-            console.log(`[FlowEngine] Matched Trigger '${match.trigger.keyword}' -> Flow ${match.trigger.flowId}`);
-            await this.startFlow(match.trigger, message.sender, sessionId);
+            const { trigger } = match;
+
+            // 3. Validation: Cooldown
+            if (trigger.cooldownMs > 0) {
+                const lastExecution = await prisma.execution.findFirst({
+                    where: { sessionId, flowId: trigger.flowId },
+                    orderBy: { startedAt: 'desc' }
+                });
+
+                if (lastExecution) {
+                    const elapsed = Date.now() - lastExecution.startedAt.getTime();
+                    if (elapsed < trigger.cooldownMs) {
+                        console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Cooldown active (${elapsed}ms < ${trigger.cooldownMs}ms)`);
+                        return;
+                    }
+                }
+            }
+
+            // 4. Validation: Usage Limit
+            if (trigger.usageLimit > 0) {
+                const usageCount = await prisma.execution.count({
+                    where: { sessionId, flowId: trigger.flowId }
+                });
+
+                if (usageCount >= trigger.usageLimit) {
+                    console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Usage limit reached (${usageCount}/${trigger.usageLimit})`);
+                    return;
+                }
+            }
+
+            console.log(`[FlowEngine] Matched Trigger '${trigger.keyword}' -> Flow ${trigger.flowId}`);
+            await this.startFlow(trigger, message.sender, sessionId);
         }
     }
 
