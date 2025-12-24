@@ -53,7 +53,8 @@ export const flowController = new Elysia({ prefix: "/flows" })
                     triggers: {
                         create: (triggers || []).map((t: any) => ({
                             keyword: t.keyword,
-                            matchType: t.matchType || 'CONTAINS'
+                            matchType: t.matchType || 'CONTAINS',
+                            botId
                         }))
                     }
                 },
@@ -66,7 +67,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
         }
     })
     .put("/:id", async ({ params: { id }, body, set }) => {
-        const { name, description, steps, triggers } = body as any;
+        const { botId, name, description, steps, triggers } = body as any;
 
         try {
             // Atomic update: Delete old steps/triggers and create new ones
@@ -92,7 +93,8 @@ export const flowController = new Elysia({ prefix: "/flows" })
                         triggers: {
                             create: (triggers || []).map((t: any) => ({
                                 keyword: t.keyword,
-                                matchType: t.matchType || 'CONTAINS'
+                                matchType: t.matchType || 'CONTAINS',
+                                botId
                             }))
                         }
                     },
