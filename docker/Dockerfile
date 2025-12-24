@@ -33,6 +33,7 @@ FROM base AS release
 COPY --from=install /temp/prod/node_modules node_modules
 COPY --from=prerelease /usr/src/app/dist/index.js index.js
 COPY --from=prerelease /usr/src/app/package.json .
+COPY --from=install /temp/prod/prisma prisma
 
 # pre-create persistent directories and set permissions
 RUN mkdir -p auth_info_baileys uploads && chown -R bun:bun auth_info_baileys uploads

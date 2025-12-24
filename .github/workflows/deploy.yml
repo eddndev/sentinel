@@ -78,7 +78,7 @@ jobs:
             docker compose pull
             docker compose up -d --remove-orphans
             
-            # Migrations
-            docker compose exec -T app bunx prisma migrate deploy
+            # Migrations - Using entrypoint override to verify schema
+            docker compose run --rm --entrypoint "bunx prisma migrate deploy" app
             
             docker image prune -f
