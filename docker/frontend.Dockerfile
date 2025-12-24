@@ -6,8 +6,7 @@ RUN bun install
 
 COPY frontend/ .
 ARG VITE_API_URL
-RUN echo "VITE_API_URL=$VITE_API_URL" > .env
-RUN bun run build
+RUN VITE_API_URL=$VITE_API_URL bun run build
 
 FROM nginx:stable-alpine
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
