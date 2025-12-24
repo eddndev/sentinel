@@ -43,7 +43,6 @@ export const openBotSettings = (bot: any) => {
                     <button id="connectBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-sm">
                         ${i18n.t("start_connection")}
                     </button>
-                    <p class="text-xs text-gray-400 mt-2">${i18n.t("requires_persistent")}</p>
                 </div>
             </div>
 
