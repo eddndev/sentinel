@@ -4,6 +4,9 @@ export default {
     active_bots: "Active Bots",
     total_flows: "Total Flows",
     executions: "Executions",
+    manage_flows: "Manage Flows",
+    flows: "Flows",
+    change_language: "Language",
 
     // Bot Connection
     basic_info: "Basic Info",

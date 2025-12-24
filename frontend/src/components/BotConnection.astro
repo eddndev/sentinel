@@ -8,13 +8,15 @@ const { botId } = Astro.props;
 
 <div
     x-data={`botConnection('${botId}')`}
-    class="connection-panel p-4 bg-gray-900/50 border border-white/10 rounded-lg backdrop-blur-md"
+    class="connection-panel p-4 bg-gray-900/50 border border-white/10 backdrop-blur-md"
 >
     <script>
         import { ApiClient } from "../lib/api";
+        // @ts-ignore
+        declare const Alpine: any;
 
         document.addEventListener("alpine:init", () => {
-            Alpine.data("botConnection", (botId) => ({
+            Alpine.data("botConnection", (botId: string) => ({
                 botId,
                 status: "DISCONNECTED",
                 qr: null,
@@ -76,6 +78,12 @@ const { botId } = Astro.props;
                     // @ts-ignore
                     if (!confirm(this.$t("disconnect") + "?")) return;
                 },
+
+                getStatusLabel() {
+                    if (this.status === "CONNECTED") return this.$t("active");
+                    if (this.status === "SCAN_QR") return this.$t("scan_qr");
+                    return this.$t("disconnected");
+                },
             }));
         });
     </script>
@@ -87,16 +95,16 @@ const { botId } = Astro.props;
         >
         </h3>
 
-        <span
-            class="px-2 py-0.5 text-[10px] font-mono border rounded"
-            :class="{
+        <div class="flex items-center gap-2">
+            <span
+                class="px-2 py-0.5 text-[10px] font-mono border"
+                :class="{
                 'border-green-500/50 text-green-400 bg-green-500/10': status === 'CONNECTED',
                 'border-yellow-500/50 text-yellow-400 bg-yellow-500/10': status === 'SCAN_QR',
                 'border-red-500/50 text-red-400 bg-red-500/10': status === 'DISCONNECTED'
               }"
-            x-text="status === 'CONNECTED' ? $t('active') : (status === 'SCAN_QR' ? $t('scan_qr') : $t('disconnected'))"
-        >
-        </span>
+                x-text="getStatusLabel()"></span>
+        </div>
     </div>
 
     <!-- QR View -->
@@ -104,7 +112,7 @@ const { botId } = Astro.props;
         <div class="text-center py-4">
             <img
                 :src="qr"
-                class="w-48 h-48 mx-auto border-4 border-white rounded-lg shadow-2xl"
+                class="w-48 h-48 mx-auto border-4 border-white shadow-2xl"
             />
             <p
                 class="mt-4 text-xs text-gray-400 font-mono animate-pulse"
@@ -130,7 +138,7 @@ const { botId } = Astro.props;
     <template x-if="status === 'CONNECTED'">
         <div class="text-center py-8">
             <div
-                class="w-16 h-16 bg-green-500/20 text-green-400 rounded-full flex items-center justify-center mx-auto mb-2 border border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
+                class="w-16 h-16 bg-green-500/20 text-green-400 flex items-center justify-center mx-auto mb-2 border border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.3)]"
             >
                 <svg
                     class="w-8 h-8"

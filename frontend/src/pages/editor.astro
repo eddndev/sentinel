@@ -259,11 +259,11 @@ import MediaPicker from "../components/MediaPicker.astro";
 </Layout>
 
 <script>
-    import { ApiClient } from "../lib/api";
-    import Sortable from "sortablejs";
-
     // @ts-ignore
     declare const Alpine: any;
+
+    import { ApiClient } from "../lib/api";
+    import Sortable from "sortablejs";
 
     // TS Definitions
     interface Trigger {
@@ -312,6 +312,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                 }
 
                 // Initialize Sortable
+                // @ts-ignore
                 this.$nextTick(() => {
                     const el = document.getElementById("steps-container");
                     if (el) {
