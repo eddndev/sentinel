@@ -1,0 +1,253 @@
+<div
+    x-data="mediaPicker"
+    x-show="open"
+    @keydown.escape.window="close()"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+    style="display: none;"
+>
+    <div
+        class="bg-[#0f172a] border border-white/10 w-full max-w-2xl h-[600px] flex flex-col shadow-2xl relative"
+    >
+        <!-- Cross Markers -->
+        <div class="cross-marker -top-[5px] -left-[5px]"></div>
+        <div class="cross-marker -top-[5px] -right-[5px]"></div>
+        <div class="cross-marker -bottom-[5px] -left-[5px]"></div>
+        <div class="cross-marker -bottom-[5px] -right-[5px]"></div>
+
+        <!-- Header -->
+        <div
+            class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-[#1e293b]/50"
+        >
+            <h3
+                class="text-sm font-bold uppercase tracking-widest text-brand-purple"
+            >
+                Select Media
+            </h3>
+            <button @click="close()" class="text-gray-400 hover:text-white"
+                >&times;</button
+            >
+        </div>
+
+        <!-- Tabs -->
+        <div
+            class="flex border-b border-white/10 text-xs uppercase tracking-wider"
+        >
+            <button
+                @click="tab = 'upload'"
+                :class="tab === 'upload' ? 'bg-brand-purple/20 text-brand-purple border-b-2 border-brand-purple' : 'text-gray-400 hover:bg-white/5'"
+                class="flex-1 py-3 text-center transition-colors"
+            >
+                Upload New
+            </button>
+            <button
+                @click="fetchFiles(); tab = 'gallery'"
+                :class="tab === 'gallery' ? 'bg-brand-purple/20 text-brand-purple border-b-2 border-brand-purple' : 'text-gray-400 hover:bg-white/5'"
+                class="flex-1 py-3 text-center transition-colors"
+            >
+                Gallery
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6 bg-[url('/grid.svg')]">
+            <!-- UPLOAD TAB -->
+            <div
+                x-show="tab === 'upload'"
+                class="h-full flex flex-col justify-center"
+            >
+                <div
+                    @dragover.prevent="dragover = true"
+                    @dragleave.prevent="dragover = false"
+                    @drop.prevent="handleDrop($event)"
+                    :class="dragover ? 'border-brand-purple bg-brand-purple/10' : 'border-white/20 hover:border-white/40'"
+                    class="border-2 border-dashed rounded-lg p-12 text-center transition-all cursor-pointer relative"
+                >
+                    <input
+                        type="file"
+                        @change="handleFileSelect($event)"
+                        class="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+
+                    <div x-show="!uploading">
+                        <svg
+                            class="w-12 h-12 mx-auto text-gray-500 mb-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                            ></path>
+                        </svg>
+                        <p class="text-sm text-gray-300 font-mono">
+                            Drag & Drop or Click to Upload
+                        </p>
+                    </div>
+
+                    <div x-show="uploading" class="text-brand-purple">
+                        <svg
+                            class="animate-spin w-8 h-8 mx-auto mb-2"
+                            viewBox="0 0 24 24"
+                            ><circle
+                                class="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                stroke-width="4"></circle><path
+                                class="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            ></path></svg
+                        >
+                        <p class="text-xs font-mono uppercase">Uploading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GALLERY TAB -->
+            <div x-show="tab === 'gallery'">
+                <div x-show="loading" class="text-center py-12">
+                    <span
+                        class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                        >Loading Files...</span
+                    >
+                </div>
+
+                <div
+                    x-show="!loading && files.length === 0"
+                    class="text-center py-12 text-gray-500 text-xs font-mono uppercase"
+                >
+                    No files found. Upload one first.
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <template x-for="file in files" :key="file.name">
+                        <div
+                            @click="select(file.url)"
+                            class="group relative aspect-square border border-white/10 bg-[#0f172a] hover:border-brand-purple cursor-pointer transition-colors overflow-hidden"
+                        >
+                            <!-- Preview (Image) -->
+                            <template x-if="isImage(file.name)">
+                                <img
+                                    :src="getApiUrl(file.url)"
+                                    class="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
+                                />
+                            </template>
+
+                            <!-- Preview (Generic) -->
+                            <template x-if="!isImage(file.name)">
+                                <div
+                                    class="w-full h-full flex items-center justify-center text-gray-600 group-hover:text-white"
+                                >
+                                    <span
+                                        class="text-xs font-mono break-all px-2"
+                                        x-text="file.name"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    import { ApiClient } from "../lib/api";
+
+    // @ts-ignore
+    declare const Alpine: any;
+
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("mediaPicker", () => ({
+            open: false,
+            tab: "upload",
+            dragover: false,
+            uploading: false,
+            loading: false,
+            files: [] as any[],
+            callback: null as any,
+
+            init() {
+                // Listen to global event to open picker
+                window.addEventListener("open-media-picker", (e: any) => {
+                    this.open = true;
+                    this.callback = e.detail?.callback;
+                    this.tab = "upload"; // Reset to upload or gallery?
+                    this.fetchFiles(); // Pre-load gallery
+                });
+            },
+
+            close() {
+                this.open = false;
+                this.callback = null;
+            },
+
+            getApiUrl(path: string) {
+                const base =
+                    import.meta.env.VITE_API_URL || "http://localhost:8080";
+                return `${base}${path.startsWith("/") ? "" : "/"}${path}`;
+            },
+
+            isImage(filename: string) {
+                return /\.(jpg|jpeg|png|gif|webp)$/i.test(filename);
+            },
+
+            async fetchFiles() {
+                this.loading = true;
+                try {
+                    const res = await ApiClient.get("/upload/list");
+                    this.files = res.files || [];
+                } catch (e) {
+                    console.error(e);
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            async handleFileSelect(e: any) {
+                const file = e.target.files[0];
+                if (file) await this.upload(file);
+            },
+
+            async handleDrop(e: any) {
+                this.dragover = false;
+                const file = e.dataTransfer.files[0];
+                if (file) await this.upload(file);
+            },
+
+            async upload(file: File) {
+                this.uploading = true;
+                const formData = new FormData();
+                formData.append("file", file);
+
+                try {
+                    const base =
+                        import.meta.env.VITE_API_URL || "http://localhost:8080";
+                    const res = await fetch(`${base}/upload`, {
+                        method: "POST",
+                        body: formData,
+                    }).then((r) => r.json());
+
+                    if (res.status === "success") {
+                        // Switch to gallery and select? Or just select immediately?
+                        this.select(res.url);
+                    }
+                } catch (e) {
+                    alert("Upload failed");
+                } finally {
+                    this.uploading = false;
+                }
+            },
+
+            select(url: string) {
+                if (this.callback) this.callback(url);
+                this.close();
+            },
+        }));
+    });
+</script>

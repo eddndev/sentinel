@@ -41,6 +41,31 @@ export const uploadController = new Elysia({ prefix: "/upload" })
             file: t.File()
         })
     })
+    .get("/list", async () => {
+        try {
+            const { readdir, stat } = await import("fs/promises");
+            const files = await readdir(UPLOAD_DIR);
+
+            // Get stats for sorting/details (optional but good)
+            const fileList = await Promise.all(files.map(async (f) => {
+                const stats = await stat(join(UPLOAD_DIR, f));
+                return {
+                    name: f,
+                    url: `/upload/files/${f}`,
+                    size: stats.size,
+                    createdAt: stats.birthtime
+                };
+            }));
+
+            // Sort by newest first
+            return {
+                files: fileList.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+            };
+        } catch (e: any) {
+            console.error("List files error", e);
+            return { files: [] };
+        }
+    })
     .get("/files/:name", ({ params: { name }, set }) => {
         const filePath = join(UPLOAD_DIR, name);
         const file = Bun.file(filePath);

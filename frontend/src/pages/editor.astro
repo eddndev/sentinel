@@ -1,0 +1,437 @@
+---
+import Layout from "../layouts/Layout.astro";
+import MediaPicker from "../components/MediaPicker.astro";
+---
+
+<Layout title="Flow Editor">
+    <!-- Main container hidden until loaded -->
+    <div
+        x-data="flowEditor"
+        x-show="ready"
+        class="h-[calc(100vh-100px)] flex flex-col"
+        style="display: none;"
+    >
+        <!-- Header -->
+        <header
+            class="flex justify-between items-center mb-6 border-b border-white/10 pb-4"
+        >
+            <div>
+                <input
+                    type="text"
+                    x-model="flow.name"
+                    class="bg-transparent text-2xl font-bold uppercase tracking-tighter w-full focus:outline-none focus:border-b border-brand-purple"
+                    placeholder="FLOW NAME"
+                />
+                <input
+                    type="text"
+                    x-model="flow.description"
+                    class="bg-transparent text-xs text-gray-500 font-mono w-full focus:outline-none"
+                    placeholder="OPTIONAL DESCRIPTION"
+                />
+            </div>
+
+            <div class="flex gap-4">
+                <a
+                    href="/"
+                    class="px-6 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs tracking-widest hover:text-white hover:bg-white/5 transition-colors flex items-center"
+                >
+                    Back
+                </a>
+                <button
+                    @click="save()"
+                    :disabled="saving"
+                    class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50"
+                >
+                    <span x-text="saving ? 'SAVING...' : 'SAVE FLOW'"></span>
+                </button>
+            </div>
+        </header>
+
+        <div
+            class="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
+            <!-- LEFT PANEL: Triggers & Settings -->
+            <div class="col-span-1 overflow-y-auto pr-2">
+                <!-- Triggers -->
+                <div
+                    class="bg-brand-panel/30 border border-white/5 p-6 mb-6 relative group"
+                >
+                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                    <h3
+                        class="text-xs text-brand-purple uppercase tracking-widest mb-4 flex justify-between items-center"
+                    >
+                        Triggers
+                        <button
+                            @click="addTrigger()"
+                            class="text-white hover:text-brand-purple text-lg leading-none"
+                            >+</button
+                        >
+                    </h3>
+
+                    <div class="space-y-3">
+                        <template
+                            x-for="(trigger, index) in flow.triggers"
+                            :key="index"
+                        >
+                            <div
+                                class="flex gap-2 items-center bg-[#0f172a] p-2 border border-white/10"
+                            >
+                                <select
+                                    x-model="trigger.matchType"
+                                    class="bg-transparent text-[10px] font-mono text-gray-400 border-r border-white/10 pr-2 focus:outline-none"
+                                >
+                                    <option value="CONTAINS">CONTAINS</option>
+                                    <option value="EXACT">EXACT</option>
+                                    <option value="REGEX">REGEX</option>
+                                </select>
+                                <input
+                                    type="text"
+                                    x-model="trigger.keyword"
+                                    class="bg-transparent text-sm flex-1 focus:outline-none"
+                                    placeholder="Keyword..."
+                                />
+                                <button
+                                    @click="removeTrigger(index)"
+                                    class="text-red-500 hover:text-red-400"
+                                    >&times;</button
+                                >
+                            </div>
+                        </template>
+
+                        <div
+                            x-show="flow.triggers.length === 0"
+                            class="text-center py-4 text-gray-600 text-xs font-mono"
+                        >
+                            No triggers defined.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Steps Builder -->
+            <div class="col-span-1 lg:col-span-2 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-4">
+                    <h3
+                        class="text-xs text-brand-purple uppercase tracking-widest"
+                    >
+                        Sequence Steps
+                    </h3>
+                    <div class="flex gap-2">
+                        <button
+                            @click="addStep('TEXT')"
+                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            >Text</button
+                        >
+                        <button
+                            @click="addStep('IMAGE')"
+                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            >Image</button
+                        >
+                        <button
+                            @click="addStep('AUDIO')"
+                            class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
+                            >Audio</button
+                        >
+                    </div>
+                </div>
+
+                <div
+                    class="flex-1 overflow-y-auto bg-brand-panel/10 border border-white/5 relative bg-[url('/grid.svg')]"
+                >
+                    <div id="steps-container" class="p-6 space-y-4 pb-20">
+                        <template
+                            x-for="(step, index) in flow.steps"
+                            :key="step.tempId || step.id || index"
+                        >
+                            <div
+                                class="step-card bg-[#0f172a] border border-white/10 p-4 relative group hover:border-brand-purple/50 transition-colors"
+                                :data-id="index"
+                            >
+                                <!-- Handle -->
+                                <div
+                                    class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-600 cursor-move handle px-2"
+                                >
+                                    ⋮⋮
+                                </div>
+
+                                <div class="pl-8">
+                                    <div
+                                        class="flex justify-between text-[10px] font-mono text-gray-500 mb-2 uppercase tracking-wide"
+                                    >
+                                        <span x-text="step.type"></span>
+                                        <div class="flex gap-2">
+                                            <span
+                                                >Delay: <input
+                                                    type="number"
+                                                    x-model="step.delayMs"
+                                                    class="w-8 bg-transparent text-right focus:outline-none text-white"
+                                                />ms</span
+                                            >
+                                            <button
+                                                @click="removeStep(index)"
+                                                class="text-red-500 hover:text-white"
+                                                >DEL</button
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <!-- Step Content -->
+                                    <div class="space-y-2">
+                                        <template x-if="step.type === 'TEXT'">
+                                            <textarea
+                                                x-model="step.content"
+                                                rows="2"
+                                                class="w-full bg-black/20 border border-white/5 p-2 text-sm focus:border-brand-purple focus:outline-none resize-none"
+                                                placeholder="Message content..."
+                                            ></textarea>
+                                        </template>
+
+                                        <template
+                                            x-if="['IMAGE', 'AUDIO', 'VIDEO', 'DOCUMENT'].includes(step.type)"
+                                        >
+                                            <div>
+                                                <div class="flex gap-2 mb-2">
+                                                    <input
+                                                        type="text"
+                                                        x-model="step.mediaUrl"
+                                                        class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono"
+                                                        placeholder="Media URL..."
+                                                    />
+                                                    <button
+                                                        @click="selectMedia(index)"
+                                                        class="bg-white/10 px-3 text-xs uppercase hover:bg-white/20"
+                                                        >Select</button
+                                                    >
+                                                </div>
+                                                <template
+                                                    x-if="step.type === 'IMAGE' && step.mediaUrl"
+                                                >
+                                                    <img
+                                                        :src="step.mediaUrl"
+                                                        class="h-24 opacity-50 hover:opacity-100 transition-opacity border border-white/10"
+                                                    />
+                                                </template>
+                                                <template
+                                                    x-if="step.type === 'IMAGE'"
+                                                >
+                                                    <input
+                                                        type="text"
+                                                        x-model="step.content"
+                                                        class="w-full bg-black/20 border border-white/5 p-2 text-xs mt-1"
+                                                        placeholder="Caption (Optional)..."
+                                                    />
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+
+                        <div
+                            x-show="flow.steps.length === 0"
+                            class="text-center py-12 text-gray-500"
+                        >
+                            <p class="text-xs font-mono uppercase">
+                                Empty Flow Sequence
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            x-show="!ready"
+            class="fixed inset-0 flex items-center justify-center bg-[#0f172a] z-50"
+        >
+            <div
+                class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+            >
+                Loading Editor...
+            </div>
+        </div>
+    </div>
+
+    <MediaPicker />
+</Layout>
+
+<script>
+    import { ApiClient } from "../lib/api";
+    import Sortable from "sortablejs";
+
+    // @ts-ignore
+    declare const Alpine: any;
+
+    // TS Definitions
+    interface Trigger {
+        keyword: string;
+        matchType: string;
+    }
+    interface Step {
+        id?: string;
+        tempId?: number; // For frontend keys
+        type: string;
+        content: string;
+        mediaUrl?: string;
+        delayMs: number;
+        jitterPct: number;
+        order: number;
+    }
+    interface Flow {
+        name: string;
+        description: string;
+        triggers: Trigger[];
+        steps: Step[];
+    }
+
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("flowEditor", () => ({
+            id: null as string | null,
+            ready: false,
+            saving: false,
+            flow: {
+                name: "",
+                description: "",
+                triggers: [],
+                steps: [],
+            } as Flow,
+
+            async init() {
+                // Client-side Router Logic
+                const params = new URLSearchParams(window.location.search);
+                this.id = params.get("id");
+
+                if (this.id && this.id !== "new") {
+                    await this.loadFlow(this.id);
+                } else {
+                    this.flow.name = "New Flow";
+                    this.ready = true;
+                }
+
+                // Initialize Sortable
+                this.$nextTick(() => {
+                    const el = document.getElementById("steps-container");
+                    if (el) {
+                        Sortable.create(el, {
+                            handle: ".handle",
+                            animation: 150,
+                            onEnd: (evt: any) => {
+                                const { oldIndex, newIndex } = evt;
+                                if (oldIndex === newIndex) return;
+
+                                // Reorder array
+                                const item = this.flow.steps.splice(
+                                    oldIndex,
+                                    1,
+                                )[0];
+                                this.flow.steps.splice(newIndex, 0, item);
+
+                                // Update order
+                                this.flow.steps.forEach(
+                                    (s: Step, i: number) => (s.order = i),
+                                );
+                            },
+                        });
+                    }
+                });
+            },
+
+            async loadFlow(id: string) {
+                try {
+                    const res = await ApiClient.get(`/flows/${id}`);
+                    this.flow = res;
+                    this.ready = true;
+                } catch (e) {
+                    alert("Failed to load flow");
+                    window.location.href = "/";
+                }
+            },
+
+            addTrigger() {
+                this.flow.triggers.push({ keyword: "", matchType: "CONTAINS" });
+            },
+
+            removeTrigger(index: number) {
+                this.flow.triggers.splice(index, 1);
+            },
+
+            addStep(type: string) {
+                this.flow.steps.push({
+                    tempId: Date.now(),
+                    type,
+                    content: "",
+                    mediaUrl: "",
+                    delayMs: 1000,
+                    jitterPct: 10,
+                    order: this.flow.steps.length,
+                });
+
+                // @ts-ignore
+                this.$nextTick(() => {
+                    const container =
+                        document.getElementById("steps-container");
+                    if (container) container.scrollTop = container.scrollHeight;
+                });
+            },
+
+            removeStep(index: number) {
+                this.flow.steps.splice(index, 1);
+            },
+
+            selectMedia(stepIndex: number) {
+                window.dispatchEvent(
+                    new CustomEvent("open-media-picker", {
+                        detail: {
+                            callback: (url: string) => {
+                                if (this.flow.steps[stepIndex]) {
+                                    this.flow.steps[stepIndex].mediaUrl = url;
+                                }
+                            },
+                        },
+                    }),
+                );
+            },
+
+            async save() {
+                if (!this.flow.name) return alert("Name Required");
+
+                this.saving = true;
+                try {
+                    // Normalize steps order
+                    this.flow.steps.forEach(
+                        (s: Step, i: number) => (s.order = i),
+                    );
+
+                    if (!this.id || this.id === "new") {
+                        // Create
+                        const params = new URLSearchParams(
+                            window.location.search,
+                        );
+                        const botId = params.get("botId");
+
+                        if (!botId) throw new Error("Missing Bot Context");
+
+                        const res = await ApiClient.post("/flows", {
+                            ...this.flow,
+                            botId,
+                        });
+                        // Redirect to edit mode
+                        window.location.href = `/editor?id=${res.id}`;
+                    } else {
+                        // Update
+                        await ApiClient.put(`/flows/${this.id}`, this.flow);
+                        alert("Saved!");
+                    }
+                } catch (e) {
+                    alert("Error saving flow");
+                    console.error(e);
+                } finally {
+                    this.saving = false;
+                }
+            },
+        }));
+    });
+</script>
