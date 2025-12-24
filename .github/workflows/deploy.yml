@@ -81,4 +81,7 @@ jobs:
             # Migrations - Using entrypoint override to verify schema
             docker compose run --rm --entrypoint "bunx prisma migrate deploy" app
             
+            # Restart app to ensure it picks up the schema (and recovers if it crashed)
+            docker compose restart app
+            
             docker image prune -f
