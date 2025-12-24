@@ -1,6 +1,7 @@
 import { Elysia, t } from "elysia";
 import { prisma } from "../services/postgres.service";
 import { Platform } from "@prisma/client";
+import { BaileysService } from "../services/baileys.service";
 
 export const botController = new Elysia({ prefix: "/bots" })
     .get("/", async () => {
@@ -70,4 +71,33 @@ export const botController = new Elysia({ prefix: "/bots" })
             set.status = 500;
             return "Failed to delete bot";
         }
+    })
+    // Baileys Management
+    .post("/:id/connect", async ({ params: { id }, set }) => {
+        try {
+            await BaileysService.startSession(id);
+            return { success: true, message: "Session initialization started" };
+        } catch (e: any) {
+            set.status = 500;
+            return `Failed to start session: ${e.message}`;
+        }
+    })
+    .get("/:id/qr", async ({ params: { id }, set }) => {
+        const qr = BaileysService.getQR(id);
+        if (!qr) {
+            set.status = 404;
+            return { message: "QR not generated or session already connected" };
+        }
+        return { qr };
+    })
+    .get("/:id/status", async ({ params: { id } }) => {
+        const session = BaileysService.getSession(id);
+        const qr = BaileysService.getQR(id);
+
+        return {
+            connected: !!session,
+            hasQr: !!qr,
+            user: session?.user
+        };
     });
+

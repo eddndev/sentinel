@@ -19,6 +19,21 @@ redis.on("connect", () => console.log("Redis Connected"));
 import { startSentinelWorker } from "./workers/message.worker";
 const worker = startSentinelWorker();
 
+// --- Baileys Init ---
+import { prisma } from "./services/postgres.service";
+import { BaileysService } from "./services/baileys.service";
+import { Platform } from "@prisma/client";
+
+// Reconnect WhatsApp Sessions
+prisma.bot.findMany({ where: { platform: Platform.WHATSAPP } }).then(bots => {
+    console.log(`[Init] Found ${bots.length} WhatsApp bots to reconnect...`);
+    for (const bot of bots) {
+        BaileysService.startSession(bot.id).catch(err => {
+            console.error(`[Init] Failed to start session for ${bot.name}:`, err);
+        });
+    }
+});
+
 // --- API ---
 import { webhookController } from "./api/webhook.controller";
 import { uploadController } from "./api/upload.controller";

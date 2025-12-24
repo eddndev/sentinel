@@ -11,12 +11,15 @@
     "dependencies": {
         "@elysiajs/cors": "^1.4.0",
         "@prisma/client": "5.12.0",
+        "@whiskeysockets/baileys": "^7.0.0-rc.9",
         "bullmq": "^5.66.2",
         "elysia": "latest",
         "ioredis": "latest",
-        "prisma": "5.12.0"
+        "prisma": "5.12.0",
+        "qrcode": "^1.5.4"
     },
     "devDependencies": {
+        "@types/qrcode": "^1.5.6",
         "bun-types": "latest"
     }
 }

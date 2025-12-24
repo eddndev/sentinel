@@ -1,7 +1,8 @@
 import { Job } from "bullmq";
 import { prisma } from "../../services/postgres.service";
 import { flowEngine } from "../../core/flow";
-import { Step, Execution, Session } from "@prisma/client";
+import { Step, Execution, Session, Platform } from "@prisma/client";
+import { BaileysService } from "../../services/baileys.service";
 
 interface StepJobData {
     executionId: string;
@@ -42,23 +43,38 @@ export class StepProcessor {
 
     private static async simulateSending(step: Step, execution: Execution & { session: Session }) {
         const platform = execution.session.platform;
-        const target = execution.platformUserId;
+        const target = execution.session.identifier; // Use session identifier (remoteJid)
+        const botId = execution.session.botId;
 
-        switch (step.type) {
-            case 'TEXT':
-                console.log(`📡 [${platform}] Sending TEXT to ${target}: "${step.content}"`);
-                break;
-            case 'IMAGE':
-                console.log(`📡 [${platform}] Sending IMAGE to ${target}: ${step.mediaUrl}`);
-                break;
-            case 'PTT':
-                console.log(`🎙️ [${platform}] Sending VOICE NOTE to ${target} (Duration: 5s)`);
-                break;
-            default:
-                console.log(`📡 [${platform}] Sending ${step.type} to ${target}`);
+        console.log(`[StepProcessor] Executing step type ${step.type} for ${target} on ${platform}`);
+
+        if (platform === Platform.WHATSAPP) {
+            try {
+                switch (step.type) {
+                    case 'TEXT':
+                        await BaileysService.sendMessage(botId, target, { text: step.content || "" });
+                        break;
+                    case 'IMAGE':
+                        if (step.mediaUrl) {
+                            await BaileysService.sendMessage(botId, target, { image: { url: step.mediaUrl }, caption: step.content || "" });
+                        }
+                        break;
+                    case 'AUDIO':
+                    case 'PTT':
+                        if (step.mediaUrl) {
+                            await BaileysService.sendMessage(botId, target, { audio: { url: step.mediaUrl }, ptt: step.type === 'PTT' });
+                        }
+                        break;
+                    default:
+                        console.warn(`[StepProcessor] Unsupported step type ${step.type} for WhatsApp`);
+                }
+            } catch (err) {
+                console.error(`[StepProcessor] Failed to send WhatsApp message:`, err);
+                throw err; // Retry job
+            }
+        } else {
+            // Fallback for other platforms (Telegram, etc.)
+            console.log(`📡 [${platform}] Simulation Sending to ${target}: ${step.type}`);
         }
-
-        // Simulate network latency
-        // await new Promise(r => setTimeout(r, 500));
     }
 }
