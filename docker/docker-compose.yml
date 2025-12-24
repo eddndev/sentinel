@@ -14,7 +14,7 @@ services:
       - sentinel-net
       - proxy-net
     volumes:
-      - ../uploads:/usr/src/app/uploads
+      - uploads_data:/usr/src/app/uploads
       - baileys_auth:/usr/src/app/auth_info_baileys
 
   frontend:
@@ -57,3 +57,4 @@ volumes:
   redis_data:
   postgres_data:
   baileys_auth:
+  uploads_data:
