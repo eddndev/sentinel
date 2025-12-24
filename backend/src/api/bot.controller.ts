@@ -95,7 +95,7 @@ export const botController = new Elysia({ prefix: "/bots" })
         const qr = BaileysService.getQR(id);
 
         return {
-            connected: !!session,
+            connected: !!session?.user,
             hasQr: !!qr,
             user: session?.user
         };
