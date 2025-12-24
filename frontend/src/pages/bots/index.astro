@@ -108,7 +108,7 @@ try {
 							{/* Connection Status Indicator */}
 							<div
 								class="mt-4 pt-4 border-t border-white/5 flex items-center gap-2"
-								x-data={`{ connected: false, init() { this.checkStatus('${bot.id}') }, async checkStatus(id) { try { const res = await fetch('${API_URL}/bots/' + id + '/status'); const data = await res.json(); this.connected = data.connected; } catch(e) { this.connected = false; } } }`}
+								x-data={`botStatus('${bot.id}')`}
 							>
 								<span
 									class="w-2 h-2 rounded-full"
@@ -265,7 +265,23 @@ try {
 		platform: "WHATSAPP" | "TELEGRAM" | "INSTAGRAM";
 	}
 
-	document.addEventListener("alpine:init", () => {
+		document.addEventListener("alpine:init", () => {
+		// Bot Status component - uses ApiClient for proper API URL
+		Alpine.data("botStatus", (botId: string) => ({
+			connected: false,
+			init() {
+				this.checkStatus();
+			},
+			async checkStatus() {
+				try {
+					const status = await ApiClient.get(`/bots/${botId}/status`);
+					this.connected = status.connected;
+				} catch (e) {
+					this.connected = false;
+				}
+			}
+		}));
+
 		Alpine.data("createBotModal", () => ({
 			visible: false,
 			loading: false,
