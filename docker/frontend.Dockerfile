@@ -6,12 +6,14 @@ RUN bun install
 
 COPY frontend/ .
 ARG VITE_API_URL
-# Debug: show what we received
-RUN echo "=== VITE_API_URL received: ${VITE_API_URL} ===" 
-# Write to .env file (Vite reads this automatically)
-RUN echo "VITE_API_URL=${VITE_API_URL}" > .env && cat .env
-# Build with the env file present
-RUN bun run build
+# All in one RUN to ensure env is available for the build
+RUN echo "=== VITE_API_URL: ${VITE_API_URL} ===" && \
+    echo "VITE_API_URL=${VITE_API_URL}" > .env && \
+    cat .env && \
+    export VITE_API_URL="${VITE_API_URL}" && \
+    bun run build && \
+    echo "=== Build complete. Checking output ===" && \
+    grep -r "api-sentinel" dist/_astro/*.js || echo "WARNING: api-sentinel NOT FOUND in build output"
 
 FROM nginx:stable-alpine
 COPY --from=build /usr/src/app/dist /usr/share/nginx/html
