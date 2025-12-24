@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Sidebar from "../components/Sidebar.astro";
 
 interface Props {
 	title: string;
@@ -26,19 +27,28 @@ const { title } = Astro.props;
 		<meta charset="UTF-8" />
 		<meta name="description" content="Sentinel Bot Orchestrator" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title} | Sentinel</title>
 	</head>
-	<body class="selection:bg-brand-purple selection:text-white relative">
-		<!-- Ambient Glow -->
-		<div
-			class="fixed top-0 left-0 w-full h-96 bg-brand-purple/5 blur-[120px] pointer-events-none z-0"
-		>
-		</div>
+	<body
+		class="selection:bg-brand-purple selection:text-white relative bg-slate-950 min-h-screen text-slate-200 font-mono antialiased overflow-x-hidden"
+	>
+		<!-- Sidebar -->
+		<Sidebar />
 
-		<div class="relative z-10 p-4 md:p-8 max-w-7xl mx-auto">
-			<slot />
+		<!-- Main Content Wrapper -->
+		<div
+			class="ml-16 md:ml-64 min-h-screen transition-all duration-300 relative z-10"
+		>
+			<!-- Ambient Glow -->
+			<div
+				class="fixed top-0 left-0 w-full h-96 bg-brand-purple/5 blur-[120px] pointer-events-none -z-10"
+			>
+			</div>
+
+			<main class="p-4 md:p-8 max-w-7xl mx-auto">
+				<slot />
+			</main>
 		</div>
 	</body>
 </html>

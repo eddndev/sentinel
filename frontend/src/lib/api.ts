@@ -3,7 +3,10 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 export const ApiClient = {
     async get(endpoint: string) {
         const res = await fetch(`${API_URL}${endpoint}`);
-        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || `API Error: ${res.statusText}`);
+        }
         return res.json();
     },
 
@@ -13,7 +16,10 @@ export const ApiClient = {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
-        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || `API Error: ${res.statusText}`);
+        }
         return res.json();
     },
 
@@ -23,7 +29,10 @@ export const ApiClient = {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
         });
-        if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.error || `API Error: ${res.statusText}`);
+        }
         return res.json();
     },
 

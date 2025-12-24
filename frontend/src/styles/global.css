@@ -21,7 +21,9 @@
 @layer base {
 
   button,
-  .btn {
+  .btn,
+  a[role="button"],
+  .button-like {
     @apply rounded-full;
   }
 

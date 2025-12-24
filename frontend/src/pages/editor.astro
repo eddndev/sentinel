@@ -15,34 +15,44 @@ import MediaPicker from "../components/MediaPicker.astro";
         <header
             class="flex justify-between items-center mb-6 border-b border-white/10 pb-4"
         >
-            <div>
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                    <span
+                        class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5"
+                        x-text="bot.platform || 'BOT'"></span>
+                    <span
+                        class="text-[10px] font-mono text-gray-500"
+                        x-text="bot.identifier || '...'"></span>
+                </div>
                 <input
                     type="text"
                     x-model="flow.name"
                     class="bg-transparent text-2xl font-bold uppercase tracking-tighter w-full focus:outline-none focus:border-b border-brand-purple"
-                    placeholder="FLOW NAME"
+                    :placeholder="$t('flow_name')"
                 />
                 <input
                     type="text"
                     x-model="flow.description"
-                    class="bg-transparent text-xs text-gray-500 font-mono w-full focus:outline-none"
-                    placeholder="OPTIONAL DESCRIPTION"
+                    class="bg-transparent text-xs text-gray-400 font-mono w-full focus:outline-none mt-1"
+                    :placeholder="$t('flow_description')"
                 />
             </div>
 
             <div class="flex gap-4">
                 <a
                     href="/"
+                    role="button"
                     class="px-6 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs tracking-widest hover:text-white hover:bg-white/5 transition-colors flex items-center"
+                    x-text="$t('back')"
                 >
-                    Back
                 </a>
                 <button
                     @click="save()"
                     :disabled="saving"
                     class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50"
                 >
-                    <span x-text="saving ? 'SAVING...' : 'SAVE FLOW'"></span>
+                    <span x-text="saving ? $t('saving') : $t('save_flow')"
+                    ></span>
                 </button>
             </div>
         </header>
@@ -61,12 +71,12 @@ import MediaPicker from "../components/MediaPicker.astro";
 
                     <h3
                         class="text-xs text-brand-purple uppercase tracking-widest mb-4 flex justify-between items-center"
+                        x-text="$t('triggers')"
                     >
-                        Triggers
                         <button
                             @click="addTrigger()"
                             class="text-white hover:text-brand-purple text-lg leading-none"
-                            >+</button
+                            :title="$t('add_trigger')">+</button
                         >
                     </h3>
 
@@ -82,19 +92,22 @@ import MediaPicker from "../components/MediaPicker.astro";
                                     x-model="trigger.matchType"
                                     class="bg-transparent text-[10px] font-mono text-gray-400 border-r border-white/10 pr-2 focus:outline-none"
                                 >
-                                    <option value="CONTAINS">CONTAINS</option>
-                                    <option value="EXACT">EXACT</option>
-                                    <option value="REGEX">REGEX</option>
+                                    <template
+                                        x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
+                                    >
+                                        <option :value="opt" x-text="opt"
+                                        ></option>
+                                    </template>
                                 </select>
                                 <input
                                     type="text"
                                     x-model="trigger.keyword"
                                     class="bg-transparent text-sm flex-1 focus:outline-none"
-                                    placeholder="Keyword..."
+                                    :placeholder="$t('keyword')"
                                 />
                                 <button
                                     @click="removeTrigger(index)"
-                                    class="text-red-500 hover:text-red-400"
+                                    class="text-red-500 hover:text-red-400 font-bold px-2"
                                     >&times;</button
                                 >
                             </div>
@@ -103,8 +116,8 @@ import MediaPicker from "../components/MediaPicker.astro";
                         <div
                             x-show="flow.triggers.length === 0"
                             class="text-center py-4 text-gray-600 text-xs font-mono"
+                            x-text="$t('no_triggers')"
                         >
-                            No triggers defined.
                         </div>
                     </div>
                 </div>
@@ -115,25 +128,22 @@ import MediaPicker from "../components/MediaPicker.astro";
                 <div class="flex justify-between items-center mb-4">
                     <h3
                         class="text-xs text-brand-purple uppercase tracking-widest"
+                        x-text="$t('sequence_steps')"
                     >
-                        Sequence Steps
                     </h3>
                     <div class="flex gap-2">
                         <button
                             @click="addStep('TEXT')"
                             class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
-                            >Text</button
-                        >
+                            x-text="$t('add_step_text')"></button>
                         <button
                             @click="addStep('IMAGE')"
                             class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
-                            >Image</button
-                        >
+                            x-text="$t('add_step_image')"></button>
                         <button
                             @click="addStep('AUDIO')"
                             class="px-3 py-1 bg-white/5 hover:bg-white/10 text-[10px] uppercase font-mono border border-white/10"
-                            >Audio</button
-                        >
+                            x-text="$t('add_step_audio')"></button>
                     </div>
                 </div>
 
@@ -163,7 +173,8 @@ import MediaPicker from "../components/MediaPicker.astro";
                                         <span x-text="step.type"></span>
                                         <div class="flex gap-2">
                                             <span
-                                                >Delay: <input
+                                                ><span x-text="$t('delay')"
+                                                ></span>: <input
                                                     type="number"
                                                     x-model="step.delayMs"
                                                     class="w-8 bg-transparent text-right focus:outline-none text-white"
@@ -172,8 +183,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                             <button
                                                 @click="removeStep(index)"
                                                 class="text-red-500 hover:text-white"
-                                                >DEL</button
-                                            >
+                                                x-text="$t('remove')"></button>
                                         </div>
                                     </div>
 
@@ -184,7 +194,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                 x-model="step.content"
                                                 rows="2"
                                                 class="w-full bg-black/20 border border-white/5 p-2 text-sm focus:border-brand-purple focus:outline-none resize-none"
-                                                placeholder="Message content..."
+                                                :placeholder="$t('message_content')"
                                             ></textarea>
                                         </template>
 
@@ -197,13 +207,13 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                         type="text"
                                                         x-model="step.mediaUrl"
                                                         class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono"
-                                                        placeholder="Media URL..."
+                                                        :placeholder="$t('media_url_placeholder')"
                                                     />
                                                     <button
                                                         @click="selectMedia(index)"
                                                         class="bg-white/10 px-3 text-xs uppercase hover:bg-white/20"
-                                                        >Select</button
-                                                    >
+                                                        x-text="$t('select_media')"
+                                                    ></button>
                                                 </div>
                                                 <template
                                                     x-if="step.type === 'IMAGE' && step.mediaUrl"
@@ -220,7 +230,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                         type="text"
                                                         x-model="step.content"
                                                         class="w-full bg-black/20 border border-white/5 p-2 text-xs mt-1"
-                                                        placeholder="Caption (Optional)..."
+                                                        :placeholder="$t('caption_placeholder')"
                                                     />
                                                 </template>
                                             </div>
@@ -234,8 +244,10 @@ import MediaPicker from "../components/MediaPicker.astro";
                             x-show="flow.steps.length === 0"
                             class="text-center py-12 text-gray-500"
                         >
-                            <p class="text-xs font-mono uppercase">
-                                Empty Flow Sequence
+                            <p
+                                class="text-xs font-mono uppercase"
+                                x-text="$t('empty_flow')"
+                            >
                             </p>
                         </div>
                     </div>
@@ -249,8 +261,8 @@ import MediaPicker from "../components/MediaPicker.astro";
         >
             <div
                 class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                x-text="$t('loading')"
             >
-                Loading Editor...
             </div>
         </div>
     </div>
@@ -292,6 +304,7 @@ import MediaPicker from "../components/MediaPicker.astro";
             id: null as string | null,
             ready: false,
             saving: false,
+            bot: {} as any,
             flow: {
                 name: "",
                 description: "",
@@ -303,6 +316,17 @@ import MediaPicker from "../components/MediaPicker.astro";
                 // Client-side Router Logic
                 const params = new URLSearchParams(window.location.search);
                 this.id = params.get("id");
+                const botId = params.get("botId");
+
+                // Fetch Bot Info for context
+                const activeBotId = this.id && this.id !== "new" ? null : botId;
+                if (activeBotId) {
+                    try {
+                        this.bot = await ApiClient.get(`/bots/${activeBotId}`);
+                    } catch (e) {
+                        console.error("Failed to load bot info", e);
+                    }
+                }
 
                 if (this.id && this.id !== "new") {
                     await this.loadFlow(this.id);

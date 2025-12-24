@@ -8,12 +8,13 @@ export default {
     flows: "Flujos",
     change_language: "Idioma",
 
-    // Bot Connection
+    // Bot Connection & Info
     basic_info: "Información Básica",
     bot_name: "Nombre del Bot",
     bot_identifier: "Identificador (Tel/Token)",
     whatsapp_baileys: "WhatsApp Baileys",
     scan_qr: "Escanear QR",
+    bot_settings: "Configuración",
     scan_whatsapp: "Escanea con WhatsApp -> Dispositivos Vinculados",
     checking_status: "Verificando estado...",
     start_connection: "Iniciar Sesión de Conexión",
@@ -21,11 +22,40 @@ export default {
     active: "Activo",
     disconnected: "Desconectado",
     initializing: "Iniciando...",
+    delete_bot: "Eliminar Bot",
+
+    // Sidebar
+    menu: "Menú",
+    bots: "Bots",
+    settings: "Configuración",
+
+    // Flow Editor
+    flow_editor: "Editor de Flujos",
+    flow_name: "Nombre del Flujo",
+    flow_description: "Descripción",
+    save_flow: "Guardar Flujo",
+    saving: "Guardando...",
+    back: "Volver",
+    triggers: "Disparadores",
+    add_trigger: "Agregar Disparador",
+    keyword: "Palabra clave...",
+    message_content: "Contenido del mensaje...",
+    match_type: "Tipo de coincidencia",
+    sequence_steps: "Secuencia de Pasos",
+    add_step_text: "Texto",
+    add_step_image: "Imagen",
+    add_step_audio: "Audio",
+    delay: "Retraso",
+    remove: "Eliminar",
+    empty_flow: "Secuencia de Flujo Vacía",
+    no_triggers: "Sin disparadores definidos.",
+    select_media: "Seleccionar Multimedia",
+    media_url_placeholder: "URL del archivo...",
+    caption_placeholder: "Leyenda (Opcional)...",
 
     // Actions
     save_changes: "Guardar Cambios",
     cancel: "Cancelar",
-    delete_bot: "Eliminar Bot",
     delete_bot_confirm: "¿Estás seguro de que deseas eliminar este bot?",
 
     // Common

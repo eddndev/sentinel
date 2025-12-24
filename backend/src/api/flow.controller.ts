@@ -63,7 +63,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
             return flow;
         } catch (e: any) {
             set.status = 500;
-            return `Failed to create flow: ${e.message}`;
+            return { error: `Failed to create flow: ${e.message}` };
         }
     })
     .put("/:id", async ({ params: { id }, body, set }) => {
@@ -104,7 +104,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
             return flow;
         } catch (e: any) {
             set.status = 500;
-            return `Failed to update flow: ${e.message}`;
+            return { error: `Failed to update flow: ${e.message}` };
         }
     })
     .delete("/:id", async ({ params: { id }, set }) => {
@@ -113,7 +113,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
             return { success: true };
         } catch (e) {
             set.status = 500;
-            return "Failed to delete flow";
+            return { error: "Failed to delete flow" };
         }
     });
 
