@@ -15,6 +15,7 @@ services:
       - sentinel-net
     volumes:
       - ../uploads:/usr/src/app/uploads
+      - baileys_auth:/usr/src/app/auth_info_baileys
 
   frontend:
     image: nginx:alpine
@@ -56,3 +57,4 @@ networks:
 volumes:
   redis_data:
   postgres_data:
+  baileys_auth:
