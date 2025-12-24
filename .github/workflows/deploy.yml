@@ -68,6 +68,7 @@ jobs:
             
             # Create .env
             echo "DATABASE_URL=postgresql://user:${{ secrets.DB_ROOT_PASSWORD }}@postgres:5432/sentinel" > .env
+            echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
             echo "REDIS_URL=redis://redis:6379" >> .env
             echo "APP_IMAGE=ghcr.io/${{ github.repository }}/app:latest" >> .env
             echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/frontend:latest" >> .env
