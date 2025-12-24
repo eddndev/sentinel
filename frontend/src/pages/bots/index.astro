@@ -1,0 +1,303 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+// Types
+interface Bot {
+	id: string;
+	name: string;
+	identifier: string;
+	platform: "WHATSAPP" | "TELEGRAM" | "INSTAGRAM";
+	createdAt: string;
+}
+
+// Server-side Fetch
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+let bots: Bot[] = [];
+let error: string | null = null;
+
+try {
+	const res = await fetch(`${API_URL}/bots`);
+	if (res.ok) bots = await res.json();
+	else error = "Failed to fetch bots";
+} catch (e) {
+	error = "API connection failed";
+}
+---
+
+<Layout title="Bots">
+	<main class="space-y-8">
+		<!-- Header -->
+		<header
+			class="flex justify-between items-center border-b border-white/10 pb-6 relative"
+		>
+			<div class="cross-marker -bottom-[5px] -left-[5px]"></div>
+			<div class="cross-marker -bottom-[5px] -right-[5px]"></div>
+
+			<div>
+				<h1
+					class="text-3xl font-bold tracking-tighter uppercase relative z-10"
+					x-text="$t('bots')"
+				>
+					Bots
+				</h1>
+				<p class="text-xs text-gray-500 font-mono mt-1">
+					{bots.length}
+					<span x-text="$t('active_bots')">registered</span>
+				</p>
+			</div>
+
+			<button
+				x-data="createBotModal"
+				@click="open()"
+				class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2"
+			>
+				<span>+</span>
+				<span x-text="$t('create_bot')">Create Bot</span>
+			</button>
+		</header>
+
+		<!-- Error State -->
+		{
+			error && (
+				<div class="p-6 border border-red-500/30 bg-red-500/10 text-red-400 text-sm font-mono">
+					{error}
+				</div>
+			)
+		}
+
+		<!-- Bot Grid -->
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			{
+				bots.length > 0 ? (
+					bots.map((bot: Bot) => (
+						<a
+							href={`/bots/detail?id=${bot.id}`}
+							class="block bg-brand-panel/30 border border-white/5 p-6 relative group hover:border-brand-purple/30 transition-all duration-300"
+						>
+							<div class="cross-marker -top-[2px] -left-[2px]" />
+							<div class="cross-marker -top-[2px] -right-[2px]" />
+
+							{/* Platform Badge */}
+							<div class="flex justify-between items-start mb-4">
+								<span class="text-[10px] font-mono text-brand-purple bg-brand-purple/10 px-2 py-0.5 uppercase">
+									{bot.platform}
+								</span>
+								<svg
+									class="w-4 h-4 text-gray-600 group-hover:text-brand-purple transition-colors"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										stroke-linecap="round"
+										stroke-linejoin="round"
+										stroke-width="2"
+										d="M9 5l7 7-7 7"
+									/>
+								</svg>
+							</div>
+
+							{/* Bot Info */}
+							<h3 class="text-lg font-bold uppercase tracking-tight mb-1 group-hover:text-brand-purple transition-colors">
+								{bot.name}
+							</h3>
+							<p class="text-xs font-mono text-gray-500 truncate">
+								{bot.identifier}
+							</p>
+
+							{/* Connection Status Indicator */}
+							<div
+								class="mt-4 pt-4 border-t border-white/5 flex items-center gap-2"
+								x-data={`{ connected: false, init() { this.checkStatus('${bot.id}') }, async checkStatus(id) { try { const res = await fetch('${API_URL}/bots/' + id + '/status'); const data = await res.json(); this.connected = data.connected; } catch(e) { this.connected = false; } } }`}
+							>
+								<span
+									class="w-2 h-2 rounded-full"
+									:class="connected ? 'bg-green-500' : 'bg-gray-600'"
+								/>
+								<span
+									class="text-[10px] font-mono uppercase"
+									:class="connected ? 'text-green-500' : 'text-gray-500'"
+									x-text="connected ? $t('active') : $t('disconnected')"
+								>
+									Checking...
+								</span>
+							</div>
+						</a>
+					))
+				) : (
+					<div class="col-span-full p-12 border border-dashed border-white/20 text-center text-gray-500 bg-brand-panel/20">
+						<svg
+							class="w-12 h-12 mx-auto mb-4 text-gray-600"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke="currentColor"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="1"
+								d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+							/>
+						</svg>
+						<p
+							class="text-sm uppercase tracking-widest mb-4"
+							x-text="$t('no_bots')"
+						>
+							No bots registered
+						</p>
+						<button
+							x-data="createBotModal"
+							@click="open()"
+							class="px-6 py-2 bg-brand-purple text-white hover:bg-brand-purple/80 transition-colors uppercase text-xs tracking-wider"
+						>
+							+ <span x-text="$t('create_bot')">Create First Bot</span>
+						</button>
+					</div>
+				)
+			}
+		</div>
+	</main>
+
+	<!-- Create Bot Modal -->
+	<div
+		x-data="createBotModal"
+		x-show="visible"
+		x-cloak
+		class="fixed inset-0 z-50 flex items-center justify-center"
+		style="display: none;"
+	>
+		<!-- Backdrop -->
+		<div
+			class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+			@click="close()"
+		>
+		</div>
+
+		<!-- Modal -->
+		<div
+			class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-md"
+		>
+			<div class="cross-marker -top-[2px] -left-[2px]"></div>
+			<div class="cross-marker -top-[2px] -right-[2px]"></div>
+			<div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+			<div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+			<h2
+				class="text-xl font-bold uppercase tracking-tight mb-6"
+				x-text="$t('create_bot')"
+			>
+				Create Bot
+			</h2>
+
+			<form @submit.prevent="submit()" class="space-y-4">
+				<div>
+					<label
+						class="block text-xs text-gray-400 font-mono uppercase mb-2"
+						x-text="$t('bot_name')"
+					></label>
+					<input
+						type="text"
+						x-model="form.name"
+						required
+						class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none"
+						placeholder="My WhatsApp Bot"
+					/>
+				</div>
+
+				<div>
+					<label
+						class="block text-xs text-gray-400 font-mono uppercase mb-2"
+						x-text="$t('bot_identifier')"
+					></label>
+					<input
+						type="text"
+						x-model="form.identifier"
+						required
+						class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none"
+						placeholder="+1234567890"
+					/>
+				</div>
+
+				<div>
+					<label class="block text-xs text-gray-400 font-mono uppercase mb-2"
+						>Platform</label
+					>
+					<select
+						x-model="form.platform"
+						class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none"
+					>
+						<option value="WHATSAPP">WhatsApp</option>
+						<option value="TELEGRAM">Telegram</option>
+						<option value="INSTAGRAM">Instagram</option>
+					</select>
+				</div>
+
+				<div class="flex gap-4 pt-4">
+					<button
+						type="button"
+						@click="close()"
+						class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5"
+						x-text="$t('cancel')"
+					>
+						Cancel
+					</button>
+					<button
+						type="submit"
+						:disabled="loading"
+						class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50"
+						x-text="loading ? $t('loading') : $t('create_bot')"
+					>
+						Create
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</Layout>
+
+<script>
+	declare const Alpine: any;
+	import { ApiClient } from "../../lib/api";
+
+	interface CreateBotForm {
+		name: string;
+		identifier: string;
+		platform: "WHATSAPP" | "TELEGRAM" | "INSTAGRAM";
+	}
+
+	document.addEventListener("alpine:init", () => {
+		Alpine.data("createBotModal", () => ({
+			visible: false,
+			loading: false,
+			form: {
+				name: "",
+				identifier: "",
+				platform: "WHATSAPP",
+			} as CreateBotForm,
+
+			open() {
+				this.visible = true;
+				this.form = { name: "", identifier: "", platform: "WHATSAPP" };
+			},
+
+			close() {
+				this.visible = false;
+			},
+
+			async submit() {
+				if (!this.form.name || !this.form.identifier) return;
+
+				this.loading = true;
+				try {
+					await ApiClient.post("/bots", this.form);
+					window.location.reload();
+				} catch (e: unknown) {
+					const error = e as Error;
+					alert(error.message || "Failed to create bot");
+				} finally {
+					this.loading = false;
+				}
+			},
+		}));
+	});
+</script>

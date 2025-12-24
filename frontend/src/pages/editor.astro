@@ -40,7 +40,7 @@ import MediaPicker from "../components/MediaPicker.astro";
 
             <div class="flex gap-4">
                 <a
-                    href="/"
+                    :href="'/bots/' + (bot.id || new URLSearchParams(window.location.search).get('botId') || '')"
                     role="button"
                     class="px-6 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs tracking-widest hover:text-white hover:bg-white/5 transition-colors flex items-center"
                     x-text="$t('back')"
@@ -304,35 +304,41 @@ import MediaPicker from "../components/MediaPicker.astro";
             id: null as string | null,
             ready: false,
             saving: false,
-            bot: {} as any,
+            bot: { id: null } as {
+                id: string | null;
+                platform?: string;
+                identifier?: string;
+            },
             flow: {
                 name: "",
                 description: "",
                 triggers: [],
                 steps: [],
             } as Flow,
+            botId: null as string | null,
 
             async init() {
                 // Client-side Router Logic
                 const params = new URLSearchParams(window.location.search);
                 this.id = params.get("id");
-                const botId = params.get("botId");
+                this.botId = params.get("botId");
 
-                // Fetch Bot Info for context
-                const activeBotId = this.id && this.id !== "new" ? null : botId;
-                if (activeBotId) {
+                if (this.id && this.id !== "new") {
+                    // Editing existing flow - load flow data first
+                    await this.loadFlow(this.id);
+                } else if (this.botId) {
+                    // Creating new flow - load bot info
                     try {
-                        this.bot = await ApiClient.get(`/bots/${activeBotId}`);
+                        this.bot = await ApiClient.get(`/bots/${this.botId}`);
                     } catch (e) {
                         console.error("Failed to load bot info", e);
                     }
-                }
-
-                if (this.id && this.id !== "new") {
-                    await this.loadFlow(this.id);
-                } else {
                     this.flow.name = "New Flow";
                     this.ready = true;
+                } else {
+                    // No context, redirect to bots
+                    window.location.href = "/bots";
+                    return;
                 }
 
                 // Initialize Sortable
@@ -368,10 +374,23 @@ import MediaPicker from "../components/MediaPicker.astro";
                 try {
                     const res = await ApiClient.get(`/flows/${id}`);
                     this.flow = res;
+                    // Extract botId from flow for back navigation
+                    if (res.botId) {
+                        this.botId = res.botId;
+                        this.bot = { id: res.botId };
+                        // Optionally load full bot info
+                        try {
+                            this.bot = await ApiClient.get(
+                                `/bots/${res.botId}`,
+                            );
+                        } catch (e) {
+                            // Bot info is optional, continue with just ID
+                        }
+                    }
                     this.ready = true;
                 } catch (e) {
                     alert("Failed to load flow");
-                    window.location.href = "/";
+                    window.location.href = "/bots";
                 }
             },
 

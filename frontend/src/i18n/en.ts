@@ -29,6 +29,16 @@ export default {
     bots: "Bots",
     settings: "Settings",
 
+    // Bot Pages
+    bot_list: "Bot List",
+    create_bot: "Create Bot",
+    view_bot: "View Details",
+    new_flow: "New Flow",
+    edit_flow: "Edit",
+    no_flows: "No flows configured yet",
+    no_bots: "No bots registered",
+    bot_detail: "Bot Detail",
+
     // Flow Editor
     flow_editor: "Flow Editor",
     flow_name: "Flow Name",
