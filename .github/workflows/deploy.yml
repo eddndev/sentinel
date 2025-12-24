@@ -36,6 +36,8 @@ jobs:
           file: docker/frontend.Dockerfile
           push: true
           tags: ghcr.io/${{ github.repository }}/frontend:latest
+          build-args: |
+            VITE_API_URL=https://api-sentinel.angelviajero.com.mx
 
   deploy:
     needs: build-and-push

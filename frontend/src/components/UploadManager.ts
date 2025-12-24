@@ -40,7 +40,7 @@ export const UploadManager = () => {
     // Logic
     const handleUpload = async (file: File) => {
         try {
-            label.textContent = "Uploading...";
+            label.textContent = i18n.t("uploading");
             const res = await ApiClient.upload(file);
             console.log(res);
 
@@ -50,16 +50,16 @@ export const UploadManager = () => {
             item.innerHTML = `
                 <div class="flex items-center gap-2 overflow-hidden">
                     <span class="font-medium truncate max-w-[150px]">${res.filename}</span>
-                    <a href="${res.url}" target="_blank" class="text-xs text-blue-500 hover:underline">View</a>
+                    <a href="${res.url}" target="_blank" class="text-xs text-blue-500 hover:underline">${i18n.t("view")}</a>
                 </div>
-                <button class="text-xs text-gray-400 hover:text-green-600" onclick="navigator.clipboard.writeText('${res.url}')">Copy</button>
+                <button class="text-xs text-gray-400 hover:text-green-600" onclick="navigator.clipboard.writeText('${res.url}')">${i18n.t("copy")}</button>
             `;
             fileList.prepend(item);
 
             label.textContent = i18n.t("drop_file");
         } catch (e) {
             console.error(e);
-            label.textContent = "Error!";
+            label.textContent = i18n.t("error");
             setTimeout(() => label.textContent = i18n.t("drop_file"), 2000);
         }
     };

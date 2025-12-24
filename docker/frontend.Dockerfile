@@ -5,6 +5,8 @@ COPY frontend/package.json frontend/bun.lock? ./
 RUN bun install
 
 COPY frontend/ .
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN bun run build
 
 FROM nginx:stable-alpine

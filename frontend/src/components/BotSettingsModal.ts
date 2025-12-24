@@ -1,6 +1,7 @@
 import { Modal } from "./Modal";
 import { ApiClient } from "../core/api";
 import { botStore } from "../core/bot.store";
+import { i18n } from "../core/i18n";
 
 export const openBotSettings = (bot: any) => {
 
@@ -9,13 +10,13 @@ export const openBotSettings = (bot: any) => {
         <div class="space-y-6">
             <!-- Basic Info -->
             <div class="space-y-4 border-b border-gray-100 pb-4">
-                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">Basic Info</h3>
+                <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider">${i18n.t("basic_info")}</h3>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Bot Name</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">${i18n.t("bot_name")}</label>
                     <input type="text" id="editName" value="${bot.name}" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Identifier</label>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">${i18n.t("bot_identifier")}</label>
                     <input type="text" id="editId" value="${bot.identifier}" class="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-800 focus:ring-2 focus:ring-indigo-500 outline-none">
                 </div>
             </div>
@@ -29,34 +30,34 @@ export const openBotSettings = (bot: any) => {
                 
                 <div id="connectionPanel" class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
                     <div id="qrContainer" class="hidden mb-4">
-                        <img id="qrImage" class="mx-auto w-48 h-48 border-4 border-white shadow-sm rounded-lg" alt="Scan QR" />
-                        <p class="text-xs text-gray-500 mt-2 font-medium">Scan with WhatsApp</p>
+                        <img id="qrImage" class="mx-auto w-48 h-48 border-4 border-white shadow-sm rounded-lg" alt="${i18n.t("scan_qr")}" />
+                        <p class="text-xs text-gray-500 mt-2 font-medium">${i18n.t("scan_whatsapp")}</p>
                     </div>
 
                     <div id="statusContainer" class="mb-4">
                         <span id="statusText" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-800">
-                            Checking status...
+                            ${i18n.t("checking_status")}
                         </span>
                     </div>
 
                     <button id="connectBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors shadow-sm">
-                        Start Connection Session
+                        ${i18n.t("start_connection")}
                     </button>
-                    <p class="text-xs text-gray-400 mt-2">Requires a persistent server process</p>
+                    <p class="text-xs text-gray-400 mt-2">${i18n.t("requires_persistent")}</p>
                 </div>
             </div>
 
             <div class="flex justify-between pt-4 border-t border-gray-100">
-                <button id="deleteBtn" class="text-red-500 hover:text-red-700 text-sm font-medium px-2 py-1">Delete Bot</button>
+                <button id="deleteBtn" class="text-red-500 hover:text-red-700 text-sm font-medium px-2 py-1">${i18n.t("delete_bot")}</button>
                 <div class="flex gap-2">
-                    <button id="cancelBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium text-sm">Cancel</button>
-                    <button id="saveBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-transform active:scale-95">Save Changes</button>
+                    <button id="cancelBtn" class="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium text-sm">${i18n.t("cancel")}</button>
+                    <button id="saveBtn" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-sm transition-transform active:scale-95">${i18n.t("save_changes")}</button>
                 </div>
             </div>
         </div>
     `;
 
-    const modal = new Modal(`Settings: ${bot.name}`, form);
+    const modal = new Modal(`${i18n.t("settings")}: ${bot.name}`, form);
 
     const saveBtn = form.querySelector("#saveBtn") as HTMLButtonElement;
     const deleteBtn = form.querySelector("#deleteBtn") as HTMLButtonElement;
@@ -76,12 +77,12 @@ export const openBotSettings = (bot: any) => {
 
     const updateStatusUI = (status: { connected: boolean, hasQr: boolean, user?: any }) => {
         if (status.connected) {
-            statusText.textContent = "Active";
+            statusText.textContent = i18n.t("active");
             statusText.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800";
             qrContainer.classList.add("hidden");
             connectBtn.classList.add("hidden");
         } else if (status.hasQr) {
-            statusText.textContent = "Scan QR Code";
+            statusText.textContent = i18n.t("scan_qr");
             statusText.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800";
 
             connectBtn.classList.add("hidden");
@@ -95,12 +96,12 @@ export const openBotSettings = (bot: any) => {
             });
 
         } else {
-            statusText.textContent = "Disconnected";
+            statusText.textContent = i18n.t("disconnected");
             statusText.className = "inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-800";
             qrContainer.classList.add("hidden");
             connectBtn.classList.remove("hidden");
             connectBtn.disabled = false;
-            connectBtn.textContent = "Start Connection Session";
+            connectBtn.textContent = i18n.t("start_connection");
         }
     };
 
@@ -125,21 +126,21 @@ export const openBotSettings = (bot: any) => {
     if (connectBtn) {
         connectBtn.onclick = async () => {
             connectBtn.disabled = true;
-            connectBtn.textContent = "Initializing...";
+            connectBtn.textContent = i18n.t("initializing");
             try {
                 await ApiClient.post(`/bots/${bot.id}/connect`, {});
                 setTimeout(checkStatus, 1000);
             } catch (e) {
-                alert("Failed to start session");
+                alert(i18n.t("failed_session"));
                 connectBtn.disabled = false;
-                connectBtn.textContent = "Start Connection Session";
+                connectBtn.textContent = i18n.t("start_connection");
             }
         };
     }
 
     saveBtn.onclick = async () => {
         saveBtn.disabled = true;
-        saveBtn.textContent = "Saving...";
+        saveBtn.textContent = i18n.t("saving");
 
         try {
             const payload = {
@@ -154,14 +155,14 @@ export const openBotSettings = (bot: any) => {
             clearInterval(pollInterval);
             modal.close();
         } catch (e) {
-            alert("Failed to save settings");
+            alert(i18n.t("failed_save"));
             saveBtn.disabled = false;
-            saveBtn.textContent = "Save Changes";
+            saveBtn.textContent = i18n.t("save_changes");
         }
     };
 
     deleteBtn.onclick = async () => {
-        if (confirm("Are you sure? This will delete all flows and history for this bot.")) {
+        if (confirm(i18n.t("delete_bot_confirm"))) {
             try {
                 await ApiClient.delete(`/bots/${bot.id}`);
                 await botStore.init();

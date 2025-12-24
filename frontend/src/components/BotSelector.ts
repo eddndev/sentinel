@@ -18,7 +18,7 @@ export const BotSelector = () => {
         const current = botStore.getCurrentBot();
         button.innerHTML = `
             <span class="${current ? 'text-gray-900' : 'text-red-500'}">
-                ${current ? current.name : 'No Bot Selected'}
+                ${current ? current.name : i18n.t("no_bot_selected")}
             </span>
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
         `;

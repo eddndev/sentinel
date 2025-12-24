@@ -16,7 +16,7 @@ export const FlowList = () => {
     actions.className = "flex items-center gap-2";
 
     const newBtn = document.createElement("button");
-    newBtn.innerHTML = `+ New Flow`;
+    newBtn.innerHTML = i18n.t("new_flow");
     newBtn.className = "text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors shadow-sm font-medium";
 
     const refreshBtn = document.createElement("button");
@@ -41,17 +41,17 @@ export const FlowList = () => {
     const loadFlows = async () => {
         const currentBot = botStore.getCurrentBot(); // Import botStore at top!
         if (!currentBot) {
-            list.innerHTML = `<div class="text-center text-gray-400 py-4">Select a bot</div>`;
+            list.innerHTML = `<div class="text-center text-gray-400 py-4">${i18n.t("select_bot")}</div>`;
             return;
         }
 
-        list.innerHTML = `<div class="text-center text-gray-400 py-4">Loading flows for ${currentBot.name}...</div>`;
+        list.innerHTML = `<div class="text-center text-gray-400 py-4">${i18n.t("loading_flows")} ${currentBot.name}...</div>`;
         try {
             const flows = await ApiClient.get(`/flows?botId=${currentBot.id}`);
             list.innerHTML = "";
 
             if (flows.length === 0) {
-                list.innerHTML = `<div class="text-center text-gray-400 py-4">No flows found</div>`;
+                list.innerHTML = `<div class="text-center text-gray-400 py-4">${i18n.t("no_flows_found")}</div>`;
                 return;
             }
 
@@ -70,14 +70,14 @@ export const FlowList = () => {
                             <h3 class="font-medium text-gray-900">${flow.name}</h3>
                             <p class="text-xs text-gray-500">${flow.description || ''}</p>
                         </div>
-                        <span class="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">Active</span>
+                        <span class="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full border border-green-100">${i18n.t("active")}</span>
                     </div>
                     <div class="flex items-center gap-2 mt-3">
                         ${stepsHtml}
                     </div>
                     <div class="mt-4 pt-3 border-t border-gray-50 flex justify-end gap-2">
                         <button id="editBtn" class="text-xs px-3 py-1.5 text-gray-600 hover:bg-gray-100 rounded transition-colors">
-                            Edit
+                            ${i18n.t("edit")}
                         </button>
                         <button id="triggerBtn" class="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded hover:bg-indigo-100 transition-colors">
                             ${i18n.t("trigger_test")}
@@ -100,7 +100,7 @@ export const FlowList = () => {
                 list.appendChild(card);
             });
         } catch (e) {
-            list.innerHTML = `<div class="text-red-500 text-center py-4">Failed to load flows</div>`;
+            list.innerHTML = `<div class="text-red-500 text-center py-4">${i18n.t("failed_load_flows")}</div>`;
         }
     };
 
