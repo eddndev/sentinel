@@ -23,7 +23,10 @@
   button,
   .btn,
   a[role="button"],
-  .button-like {
+  .button-like,
+  .badge,
+  [class*="px-"][class*="py-0.5"],
+  [class*="bg-brand-purple/10"] {
     @apply rounded-full;
   }
 

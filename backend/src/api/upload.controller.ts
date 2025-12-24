@@ -9,33 +9,44 @@ await mkdir(UPLOAD_DIR, { recursive: true });
 
 export const uploadController = new Elysia({ prefix: "/upload" })
     .post("/", async ({ body, request, set }) => {
-        const file = body.file;
+        console.log("[Upload] Incoming upload request...");
 
-        if (!file) {
-            set.status = 400;
-            return "No file uploaded";
+        try {
+            const file = body.file;
+
+            if (!file) {
+                console.log("[Upload] No file in request body");
+                set.status = 400;
+                return { status: "error", message: "No file uploaded" };
+            }
+
+            console.log(`[Upload] Received file: ${file.name}, size: ${file.size}, type: ${file.type}`);
+
+            const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+            const extension = file.name.split('.').pop() || "bin";
+            const filename = `${uniqueSuffix}.${extension}`;
+            const filePath = join(UPLOAD_DIR, filename);
+
+            console.log(`[Upload] Writing to: ${filePath}`);
+
+            // Write file
+            await Bun.write(filePath, file);
+
+            console.log(`[Upload] File saved: ${filename} (${file.size} bytes)`);
+
+            const url = `/upload/files/${filename}`;
+
+            return {
+                status: "success",
+                filename,
+                url
+            };
+        } catch (error: any) {
+            console.error("[Upload] ERROR:", error);
+            console.error("[Upload] Stack:", error.stack);
+            set.status = 500;
+            return { status: "error", message: error.message || "Upload failed" };
         }
-
-        const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-        const extension = file.name.split('.').pop() || "bin";
-        const filename = `${uniqueSuffix}.${extension}`;
-        const filePath = join(UPLOAD_DIR, filename);
-
-        // Write file
-        await Bun.write(filePath, file);
-
-        console.log(`[Upload] File saved: ${filename} (${file.size} bytes)`);
-
-        // Construct Public URL
-        // TODO: Use env var for BASE_URL if needed
-        // For now, assume relative or absolute path from the client perspective
-        const url = `/upload/files/${filename}`;
-
-        return {
-            status: "success",
-            filename,
-            url
-        };
     }, {
         body: t.Object({
             file: t.File()

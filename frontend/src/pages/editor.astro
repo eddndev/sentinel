@@ -40,7 +40,7 @@ import MediaPicker from "../components/MediaPicker.astro";
 
             <div class="flex gap-4">
                 <a
-                    :href="'/bots/' + (bot.id || new URLSearchParams(window.location.search).get('botId') || '')"
+                    :href="'/bots/detail?id=' + (bot.id || new URLSearchParams(window.location.search).get('botId') || '')"
                     role="button"
                     class="px-6 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs tracking-widest hover:text-white hover:bg-white/5 transition-colors flex items-center"
                     x-text="$t('back')"
