@@ -32,7 +32,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
         return flow;
     })
     .post("/", async ({ body, set }) => {
-        const { botId, name, description, steps } = body as any;
+        const { botId, name, description, steps, triggers } = body as any;
 
         try {
             const flow = await prisma.flow.create({
@@ -49,9 +49,15 @@ export const flowController = new Elysia({ prefix: "/flows" })
                             jitterPct: s.jitterPct ?? 10,
                             order: index
                         }))
+                    },
+                    triggers: {
+                        create: (triggers || []).map((t: any) => ({
+                            keyword: t.keyword,
+                            matchType: t.matchType || 'CONTAINS'
+                        }))
                     }
                 },
-                include: { steps: true }
+                include: { steps: true, triggers: true }
             });
             return flow;
         } catch (e: any) {
@@ -60,12 +66,13 @@ export const flowController = new Elysia({ prefix: "/flows" })
         }
     })
     .put("/:id", async ({ params: { id }, body, set }) => {
-        const { name, description, steps } = body as any;
+        const { name, description, steps, triggers } = body as any;
 
         try {
-            // Atomic update: Delete old steps and create new ones
+            // Atomic update: Delete old steps/triggers and create new ones
             const flow = await prisma.$transaction(async (tx) => {
                 await tx.step.deleteMany({ where: { flowId: id } });
+                await tx.trigger.deleteMany({ where: { flowId: id } });
 
                 return tx.flow.update({
                     where: { id },
@@ -81,9 +88,15 @@ export const flowController = new Elysia({ prefix: "/flows" })
                                 jitterPct: s.jitterPct ?? 10,
                                 order: index
                             }))
+                        },
+                        triggers: {
+                            create: (triggers || []).map((t: any) => ({
+                                keyword: t.keyword,
+                                matchType: t.matchType || 'CONTAINS'
+                            }))
                         }
                     },
-                    include: { steps: true }
+                    include: { steps: true, triggers: true }
                 });
             });
             return flow;
