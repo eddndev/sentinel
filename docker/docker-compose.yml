@@ -1,18 +1,18 @@
 services:
   app:
+    image: ${APP_IMAGE:-sentinel-app}
     build:
       context: ../
       dockerfile: docker/Dockerfile
-    ports:
-      - "8080:8080"
     environment:
       - REDIS_URL=redis://redis:6379
-      - DATABASE_URL=postgresql://user:password@postgres:5432/sentinel
+      - DATABASE_URL=${DATABASE_URL}
     depends_on:
       - redis
       - postgres
     networks:
       - sentinel-net
+      - proxy-net
     volumes:
       - ../uploads:/usr/src/app/uploads
       - baileys_auth:/usr/src/app/auth_info_baileys
@@ -41,10 +41,8 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${DB_ROOT_PASSWORD:-password}
       POSTGRES_DB: sentinel
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
@@ -53,6 +51,8 @@ services:
 networks:
   sentinel-net:
     driver: bridge
+  proxy-net:
+    external: true
 
 volumes:
   redis_data:

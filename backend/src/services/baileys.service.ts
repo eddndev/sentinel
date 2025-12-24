@@ -14,6 +14,9 @@ import QRCode from 'qrcode';
 import { prisma } from './postgres.service';
 import { flowEngine } from '../core/flow';
 import { SessionStatus, Platform } from '@prisma/client';
+import pino from 'pino';
+
+const logger = pino({ level: 'silent' });
 
 // Map to store active sockets: botId -> socket
 const sessions = new Map<string, WASocket>();
@@ -44,11 +47,11 @@ export class BaileysService {
         // @ts-ignore
         const sock = makeWASocket({
             version,
-            logger: undefined as any, // Default pino logger is verbose, can suppress
+            logger,
             printQRInTerminal: false,
             auth: {
                 creds: state.creds,
-                keys: makeCacheableSignalKeyStore(state.keys, undefined as any),
+                keys: makeCacheableSignalKeyStore(state.keys, logger),
             },
             generateHighQualityLinkPreview: true,
         });
