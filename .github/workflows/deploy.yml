@@ -38,6 +38,7 @@ jobs:
           tags: ghcr.io/${{ github.repository }}/frontend:latest
           build-args: |
             VITE_API_URL=https://api-sentinel.angelviajero.com.mx
+          no-cache: true
 
   deploy:
     needs: build-and-push
