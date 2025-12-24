@@ -1,5 +1,5 @@
 ---
-import '../styles/global.css';
+import "../styles/global.css";
 
 interface Props {
 	title: string;
@@ -8,7 +8,19 @@ interface Props {
 const { title } = Astro.props;
 ---
 
-<!doctype html>
+<script>
+	import Alpine from "alpinejs";
+	import { i18nPlugin } from "../i18n";
+	import storePlugin from "../lib/store";
+
+	document.addEventListener("alpine:init", () => {
+		i18nPlugin(Alpine);
+		storePlugin(Alpine);
+		// Initialize store
+		Alpine.store("bot").init();
+	});
+</script>
+
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
@@ -19,11 +31,14 @@ const { title } = Astro.props;
 		<title>{title} | Sentinel</title>
 	</head>
 	<body class="selection:bg-brand-purple selection:text-white relative">
-        <!-- Ambient Glow -->
-        <div class="fixed top-0 left-0 w-full h-96 bg-brand-purple/5 blur-[120px] pointer-events-none z-0"></div>
-		
-        <div class="relative z-10 p-4 md:p-8 max-w-7xl mx-auto">
-            <slot />
-        </div>
+		<!-- Ambient Glow -->
+		<div
+			class="fixed top-0 left-0 w-full h-96 bg-brand-purple/5 blur-[120px] pointer-events-none z-0"
+		>
+		</div>
+
+		<div class="relative z-10 p-4 md:p-8 max-w-7xl mx-auto">
+			<slot />
+		</div>
 	</body>
 </html>

@@ -1,5 +1,20 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import BotConnection from "../components/BotConnection.astro";
+
+// Server-side Fetch (SSR)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+let bots = [];
+let error = null;
+
+try {
+	const res = await fetch(`${API_URL}/bots`);
+	if (res.ok) bots = await res.json();
+} catch (e) {
+	error = "Failed to load bots system";
+}
+
+const activeBot = bots.length > 0 ? bots[0] : null;
 ---
 
 <Layout title="Dashboard">
@@ -11,7 +26,9 @@ import Layout from "../layouts/Layout.astro";
 			<div class="cross-marker -bottom-[5px] -left-[5px]"></div>
 			<div class="cross-marker -bottom-[5px] -right-[5px]"></div>
 
-			<h1 class="text-3xl font-bold tracking-tighter uppercase">
+			<h1
+				class="text-3xl font-bold tracking-tighter uppercase relative z-10"
+			>
 				Sentinel <span
 					class="text-brand-purple text-xs tracking-[0.3em] align-top ml-2"
 					>v1.0.0</span
@@ -22,27 +39,26 @@ import Layout from "../layouts/Layout.astro";
 				<div
 					class="px-3 py-1 border border-white/20 text-xs font-mono text-white/60"
 				>
-					SYSTEM: ONLINE
+					SYSTEM: {error ? "OFFLINE" : "ONLINE"}
 				</div>
 			</div>
 		</header>
 
-		<!-- Dynamic Grid Content (Placeholder) -->
+		<!-- Dynamic Grid Content -->
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-			<div
-				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group"
-			>
-				<div
-					class="cross-marker -top-[5px] -left-[5px] opacity-0 group-hover:opacity-100 transition-opacity"
-				>
-				</div>
-
-				<h2
-					class="text-xs text-brand-purple uppercase tracking-widest mb-4"
-				>
-					Active Bots
-				</h2>
-				<div class="text-4xl font-mono font-light">01</div>
+			<!-- Bot Status / Connection Panel -->
+			<div class="col-span-1 md:col-span-1">
+				{
+					activeBot ? (
+						<BotConnection botId={activeBot.id} />
+					) : (
+						<div class="p-6 border border-dashed border-white/20 text-center text-gray-500">
+							<p class="text-xs uppercase tracking-widest">
+								No Bots Configured
+							</p>
+						</div>
+					)
+				}
 			</div>
 
 			<div
