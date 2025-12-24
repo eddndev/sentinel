@@ -4,7 +4,9 @@ import Layout from "../layouts/Layout.astro";
 // Server-side Fetch for stats
 const API_URL =
 	import.meta.env.VITE_API_URL ||
-	(import.meta.env.DEV ? "http://localhost:8080" : "");
+	(import.meta.env.DEV
+		? "http://localhost:8080"
+		: "https://api-sentinel.angelviajero.com.mx");
 
 interface StatsData {
 	botCount: number;
