@@ -44,7 +44,11 @@ import { triggerController } from "./api/trigger.controller";
 import { cors } from "@elysiajs/cors";
 
 const app = new Elysia()
-    .use(cors())
+    .use(cors({
+        origin: [/angelviajero\.com\.mx$/, 'localhost'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization']
+    }))
     .use(webhookController)
     .use(uploadController)
     .use(flowController)
