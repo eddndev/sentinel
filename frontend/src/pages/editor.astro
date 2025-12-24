@@ -69,16 +69,16 @@ import MediaPicker from "../components/MediaPicker.astro";
                     <div class="cross-marker -top-[2px] -left-[2px]"></div>
                     <div class="cross-marker -top-[2px] -right-[2px]"></div>
 
-                    <h3
+                    <div
                         class="text-xs text-brand-purple uppercase tracking-widest mb-4 flex justify-between items-center"
-                        x-text="$t('triggers')"
                     >
+                        <span x-text="$t('triggers')"></span>
                         <button
                             @click="addTrigger()"
-                            class="text-white hover:text-brand-purple text-lg leading-none"
+                            class="w-6 h-6 flex items-center justify-center bg-brand-purple/20 hover:bg-brand-purple/40 text-brand-purple hover:text-white text-lg leading-none transition-colors"
                             :title="$t('add_trigger')">+</button
                         >
-                    </h3>
+                    </div>
 
                     <div class="space-y-3">
                         <template
