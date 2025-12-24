@@ -13,8 +13,6 @@ try {
 } catch (e) {
 	error = "Failed to load bots system";
 }
-
-const activeBot = bots.length > 0 ? bots[0] : null;
 ---
 
 <Layout title="Dashboard">
@@ -45,24 +43,33 @@ const activeBot = bots.length > 0 ? bots[0] : null;
 		</header>
 
 		<!-- Dynamic Grid Content -->
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-			<!-- Bot Status / Connection Panel -->
-			<div class="col-span-1 md:col-span-1">
-				{
-					activeBot ? (
-						<BotConnection botId={activeBot.id} />
-					) : (
-						<div class="p-6 border border-dashed border-white/20 text-center text-gray-500">
-							<p class="text-xs uppercase tracking-widest">
-								No Bots Configured
-							</p>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+			<!-- Bot Status Cards -->
+			{
+				bots.length > 0 ? (
+					bots.map((bot: any) => (
+						<div class="col-span-1">
+							<h3 class="text-xs text-brand-purple uppercase tracking-widest mb-2 pl-1">
+								{bot.name}
+							</h3>
+							<BotConnection botId={bot.id} />
 						</div>
-					)
-				}
-			</div>
+					))
+				) : (
+					<div class="col-span-1 md:col-span-3 p-12 border border-dashed border-white/20 text-center text-gray-500 bg-brand-panel/20">
+						<p class="text-sm uppercase tracking-widest mb-4">
+							No Bots Online
+						</p>
+						<button class="px-4 py-2 bg-brand-purple/20 text-brand-purple border border-brand-purple/50 hover:bg-brand-purple/40 transition-colors uppercase text-xs tracking-wider">
+							+ Create First Bot
+						</button>
+					</div>
+				)
+			}
 
+			<!-- Stats Logic (Keep outside the loop or purely informational) -->
 			<div
-				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group"
+				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group h-fit"
 			>
 				<h2
 					class="text-xs text-brand-purple uppercase tracking-widest mb-4"
@@ -73,7 +80,7 @@ const activeBot = bots.length > 0 ? bots[0] : null;
 			</div>
 
 			<div
-				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group"
+				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group h-fit"
 			>
 				<h2
 					class="text-xs text-brand-purple uppercase tracking-widest mb-4"

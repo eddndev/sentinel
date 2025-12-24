@@ -28,9 +28,10 @@ const { botId } = Astro.props;
                         () => this.checkStatus(),
                         2000,
                     );
+                },
 
-                    // @ts-ignore
-                    this.$cleanup(() => clearInterval(this.pollInterval));
+                destroy() {
+                    if (this.pollInterval) clearInterval(this.pollInterval);
                 },
 
                 async checkStatus() {
