@@ -1,0 +1,73 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Dashboard">
+	<main class="space-y-8">
+		<!-- Header -->
+		<header
+			class="flex justify-between items-center border-b border-white/10 pb-6 relative"
+		>
+			<div class="cross-marker -bottom-[5px] -left-[5px]"></div>
+			<div class="cross-marker -bottom-[5px] -right-[5px]"></div>
+
+			<h1 class="text-3xl font-bold tracking-tighter uppercase">
+				Sentinel <span
+					class="text-brand-purple text-xs tracking-[0.3em] align-top ml-2"
+					>v1.0.0</span
+				>
+			</h1>
+
+			<div class="flex items-center gap-4">
+				<div
+					class="px-3 py-1 border border-white/20 text-xs font-mono text-white/60"
+				>
+					SYSTEM: ONLINE
+				</div>
+			</div>
+		</header>
+
+		<!-- Dynamic Grid Content (Placeholder) -->
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+			<div
+				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group"
+			>
+				<div
+					class="cross-marker -top-[5px] -left-[5px] opacity-0 group-hover:opacity-100 transition-opacity"
+				>
+				</div>
+
+				<h2
+					class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+				>
+					Active Bots
+				</h2>
+				<div class="text-4xl font-mono font-light">01</div>
+			</div>
+
+			<div
+				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group"
+			>
+				<h2
+					class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+				>
+					Total Flows
+				</h2>
+				<div class="text-4xl font-mono font-light">12</div>
+			</div>
+
+			<div
+				class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group"
+			>
+				<h2
+					class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+				>
+					Executions
+				</h2>
+				<div class="text-4xl font-mono font-light text-green-400">
+					843
+				</div>
+			</div>
+		</div>
+	</main>
+</Layout>

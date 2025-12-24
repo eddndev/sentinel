@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-purple: #8b5cf6;
+  --color-brand-dark: #0f172a;
+  --color-brand-panel: #1e293b;
+  
+  /* Bot Aesthetics */
+  --radius-none: 0px;
+}
+
+/* "The Grid" Background */
+body {
+  @apply bg-slate-950 text-slate-200 font-mono antialiased;
+  background-image: 
+    linear-gradient(to right, rgba(139, 92, 246, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(139, 92, 246, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  min-height: 100vh;
+}
+
+/* Cross Markers */
+.cross-marker {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+}
+
+.cross-marker::before, .cross-marker::after {
+  content: '';
+  position: absolute;
+  background-color: rgba(139, 92, 246, 0.3);
+}
+
+.cross-marker::before {
+  top: 4px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+.cross-marker::after {
+  left: 4px;
+  top: 0;
+  height: 100%;
+  width: 2px;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a; 
+}
+::-webkit-scrollbar-thumb {
+  background: #334155; 
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569; 
+}
