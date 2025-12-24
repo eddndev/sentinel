@@ -189,8 +189,10 @@
 
             getApiUrl(path: string) {
                 const base =
-                    import.meta.env.VITE_API_URL ||
-                    (import.meta.env.DEV ? "http://localhost:8080" : "");
+                    import.meta.env.PUBLIC_API_URL ||
+                    (import.meta.env.DEV
+                        ? "http://localhost:8080"
+                        : "https://api-sentinel.angelviajero.com.mx");
                 return `${base}${path.startsWith("/") ? "" : "/"}${path}`;
             },
 
@@ -228,8 +230,10 @@
 
                 try {
                     const base =
-                        import.meta.env.VITE_API_URL ||
-                        (import.meta.env.DEV ? "http://localhost:8080" : "");
+                        import.meta.env.PUBLIC_API_URL ||
+                        (import.meta.env.DEV
+                            ? "http://localhost:8080"
+                            : "https://api-sentinel.angelviajero.com.mx");
                     const res = await fetch(`${base}/upload`, {
                         method: "POST",
                         body: formData,

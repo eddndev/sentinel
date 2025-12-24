@@ -37,7 +37,7 @@ jobs:
           push: true
           tags: ghcr.io/${{ github.repository }}/frontend:latest
           build-args: |
-            VITE_API_URL=https://api-sentinel.angelviajero.com.mx
+            PUBLIC_API_URL=https://api-sentinel.angelviajero.com.mx
           no-cache: true
 
   deploy:
@@ -74,7 +74,7 @@ jobs:
             echo "APP_IMAGE=ghcr.io/${{ github.repository }}/app:latest" >> .env
             echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/frontend:latest" >> .env
             
-            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u eddndev --password-stdin
             
             docker compose pull
             docker compose up -d --remove-orphans
