@@ -86,30 +86,71 @@ import MediaPicker from "../components/MediaPicker.astro";
                             :key="index"
                         >
                             <div
-                                class="flex gap-2 items-center bg-[#0f172a] p-2 border border-white/10"
+                                class="bg-[#0f172a] p-3 border border-white/10 space-y-2"
                             >
-                                <select
-                                    x-model="trigger.matchType"
-                                    class="bg-transparent text-[10px] font-mono text-gray-400 border-r border-white/10 pr-2 focus:outline-none"
-                                >
-                                    <template
-                                        x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
+                                <!-- Row 1: Match Type + Keyword + Delete -->
+                                <div class="flex gap-2 items-center">
+                                    <select
+                                        x-model="trigger.matchType"
+                                        class="bg-transparent text-[10px] font-mono text-gray-400 border-r border-white/10 pr-2 focus:outline-none"
                                     >
-                                        <option :value="opt" x-text="opt"
-                                        ></option>
-                                    </template>
-                                </select>
-                                <input
-                                    type="text"
-                                    x-model="trigger.keyword"
-                                    class="bg-transparent text-sm flex-1 focus:outline-none"
-                                    :placeholder="$t('keyword')"
-                                />
-                                <button
-                                    @click="removeTrigger(index)"
-                                    class="text-red-500 hover:text-red-400 font-bold px-2"
-                                    >&times;</button
+                                        <template
+                                            x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
+                                        >
+                                            <option :value="opt" x-text="opt"
+                                            ></option>
+                                        </template>
+                                    </select>
+                                    <input
+                                        type="text"
+                                        x-model="trigger.keyword"
+                                        class="bg-transparent text-sm flex-1 focus:outline-none"
+                                        :placeholder="$t('keyword')"
+                                    />
+                                    <button
+                                        @click="removeTrigger(index)"
+                                        class="text-red-500 hover:text-red-400 font-bold px-2"
+                                        >&times;</button
+                                    >
+                                </div>
+                                <!-- Row 2: Usage Limit + Cooldown -->
+                                <div
+                                    class="flex gap-4 text-[10px] font-mono text-gray-500"
                                 >
+                                    <div class="flex items-center gap-1">
+                                        <span
+                                            x-text="$t('usage_limit') || 'Límite'"
+                                            >Límite</span
+                                        >:
+                                        <select
+                                            x-model="trigger.usageLimit"
+                                            class="bg-transparent text-white focus:outline-none"
+                                        >
+                                            <option value="0">∞</option>
+                                            <option value="1">1x</option>
+                                            <option value="3">3x</option>
+                                            <option value="5">5x</option>
+                                            <option value="10">10x</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <span
+                                            x-text="$t('cooldown') || 'Cooldown'"
+                                            >Cooldown</span
+                                        >:
+                                        <select
+                                            x-model="trigger.cooldownMs"
+                                            class="bg-transparent text-white focus:outline-none"
+                                        >
+                                            <option value="0">-</option>
+                                            <option value="60000">1min</option>
+                                            <option value="300000">5min</option>
+                                            <option value="3600000">1h</option>
+                                            <option value="86400000">24h</option
+                                            >
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </template>
 
@@ -171,15 +212,28 @@ import MediaPicker from "../components/MediaPicker.astro";
                                         class="flex justify-between text-[10px] font-mono text-gray-500 mb-2 uppercase tracking-wide"
                                     >
                                         <span x-text="step.type"></span>
-                                        <div class="flex gap-2">
-                                            <span
-                                                ><span x-text="$t('delay')"
-                                                ></span>: <input
+                                        <div
+                                            class="flex gap-3 items-center flex-wrap"
+                                        >
+                                            <span class="text-gray-600">
+                                                <span x-text="$t('delay')"
+                                                ></span>:
+                                                <input
                                                     type="number"
                                                     x-model="step.delayMs"
+                                                    class="w-12 bg-transparent text-right focus:outline-none text-white"
+                                                    min="0"
+                                                />ms
+                                            </span>
+                                            <span class="text-gray-600">
+                                                ±<input
+                                                    type="number"
+                                                    x-model="step.jitterPct"
                                                     class="w-8 bg-transparent text-right focus:outline-none text-white"
-                                                />ms</span
-                                            >
+                                                    min="0"
+                                                    max="100"
+                                                />%
+                                            </span>
                                             <button
                                                 @click="removeStep(index)"
                                                 class="text-red-500 hover:text-white"
@@ -281,6 +335,8 @@ import MediaPicker from "../components/MediaPicker.astro";
     interface Trigger {
         keyword: string;
         matchType: string;
+        usageLimit?: number;
+        cooldownMs?: number;
     }
     interface Step {
         id?: string;
@@ -395,7 +451,12 @@ import MediaPicker from "../components/MediaPicker.astro";
             },
 
             addTrigger() {
-                this.flow.triggers.push({ keyword: "", matchType: "CONTAINS" });
+                this.flow.triggers.push({
+                    keyword: "",
+                    matchType: "CONTAINS",
+                    usageLimit: 0,
+                    cooldownMs: 0,
+                });
             },
 
             removeTrigger(index: number) {
@@ -444,10 +505,18 @@ import MediaPicker from "../components/MediaPicker.astro";
 
                 this.saving = true;
                 try {
-                    // Normalize steps order
-                    this.flow.steps.forEach(
-                        (s: Step, i: number) => (s.order = i),
-                    );
+                    // Normalize steps order and convert numeric types
+                    this.flow.steps.forEach((s: Step, i: number) => {
+                        s.order = i;
+                        s.delayMs = parseInt(s.delayMs as any, 10) || 1000;
+                        s.jitterPct = parseInt(s.jitterPct as any, 10) || 10;
+                    });
+
+                    // Convert trigger numeric types
+                    this.flow.triggers.forEach((t: Trigger) => {
+                        t.usageLimit = parseInt(t.usageLimit as any, 10) || 0;
+                        t.cooldownMs = parseInt(t.cooldownMs as any, 10) || 0;
+                    });
 
                     if (!this.id || this.id === "new") {
                         // Create
