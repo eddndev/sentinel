@@ -26,6 +26,7 @@ const menuItems = [
 
 <aside
     class="fixed left-0 top-0 h-screen z-50 bg-[#020617] border-r border-white/10 transition-all duration-300 flex flex-col shadow-2xl"
+    x-data={`{ menuItems: ${JSON.stringify(menuItems)} }`}
     :class="[
         $store.sidebar.mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0',
         $store.sidebar.expanded ? 'md:w-64' : 'md:w-16'
