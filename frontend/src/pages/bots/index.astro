@@ -146,8 +146,7 @@ try {
 							No bots registered
 						</p>
 						<button
-							x-data="createBotModal"
-							@click="open()"
+							@click="$dispatch('open-create-bot')"
 							class="px-6 py-2 bg-brand-purple text-white hover:bg-brand-purple/80 transition-colors uppercase text-xs tracking-wider"
 						>
 							+ <span x-text="$t('create_bot')">Create First Bot</span>
@@ -229,7 +228,7 @@ try {
 					>
 						<option value="WHATSAPP">WhatsApp</option>
 						<option value="TELEGRAM">Telegram</option>
-						<option value="INSTAGRAM">Instagram</option>
+						<!-- <option value="INSTAGRAM">Instagram</option> -->
 					</select>
 				</div>
 
@@ -302,14 +301,20 @@ try {
 			},
 
 			async submit() {
-				if (!this.form.name || !this.form.identifier) return;
+				console.log("Submitting bot form:", this.form);
+				if (!this.form.name || !this.form.identifier) {
+					console.warn("Validation failed");
+					return;
+				}
 
 				this.loading = true;
 				try {
-					await ApiClient.post("/bots", this.form);
+					const res = await ApiClient.post("/bots", this.form);
+					console.log("Bot created:", res);
 					window.location.reload();
 				} catch (e: unknown) {
 					const error = e as Error;
+					console.error("Bot creation failed:", error);
 					alert(error.message || "Failed to create bot");
 				} finally {
 					this.loading = false;
