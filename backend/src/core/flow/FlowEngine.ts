@@ -43,42 +43,83 @@ export class FlowEngine {
 
         if (match) {
             const { trigger } = match;
+            const lockKey = `flow:lock:${sessionId}:${trigger.flowId}`;
 
-            // 3. Validation: Cooldown
-            if (trigger.cooldownMs > 0) {
-                const lastExecution = await prisma.execution.findFirst({
-                    where: { sessionId, flowId: trigger.flowId },
-                    orderBy: { startedAt: 'desc' }
-                });
+            // 3. Acquire distributed lock to prevent race conditions
+            // SETNX with 30 second expiry - if lock exists, another execution is in progress
+            const lockAcquired = await redis.set(lockKey, "1", "EX", 30, "NX");
 
-                if (lastExecution) {
-                    const elapsed = Date.now() - lastExecution.startedAt.getTime();
-                    if (elapsed < trigger.cooldownMs) {
-                        console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Cooldown active (${elapsed}ms < ${trigger.cooldownMs}ms)`);
-                        return;
+            if (!lockAcquired) {
+                console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Lock already held (concurrent execution in progress)`);
+                return;
+            }
+
+            try {
+                // 4. Atomic validation and execution creation using Prisma transaction
+                const execution = await prisma.$transaction(async (tx) => {
+                    // 4a. Validate Cooldown
+                    if (trigger.cooldownMs > 0) {
+                        const lastExecution = await tx.execution.findFirst({
+                            where: { sessionId, flowId: trigger.flowId },
+                            orderBy: { startedAt: 'desc' }
+                        });
+
+                        if (lastExecution) {
+                            const elapsed = Date.now() - lastExecution.startedAt.getTime();
+                            if (elapsed < trigger.cooldownMs) {
+                                throw new Error(`COOLDOWN:${elapsed}/${trigger.cooldownMs}`);
+                            }
+                        }
                     }
-                }
-            }
 
-            // 4. Validation: Usage Limit
-            if (trigger.usageLimit > 0) {
-                const usageCount = await prisma.execution.count({
-                    where: { sessionId, flowId: trigger.flowId }
+                    // 4b. Validate Usage Limit
+                    if (trigger.usageLimit > 0) {
+                        const usageCount = await tx.execution.count({
+                            where: { sessionId, flowId: trigger.flowId }
+                        });
+
+                        if (usageCount >= trigger.usageLimit) {
+                            throw new Error(`LIMIT:${usageCount}/${trigger.usageLimit}`);
+                        }
+                    }
+
+                    // 4c. Create execution atomically (inside same transaction)
+                    console.log(`[FlowEngine] Matched Trigger '${trigger.keyword}' -> Flow ${trigger.flowId}`);
+
+                    return await tx.execution.create({
+                        data: {
+                            sessionId,
+                            flowId: trigger.flowId,
+                            platformUserId: message.sender,
+                            status: "RUNNING",
+                            currentStep: 0,
+                            variableContext: {}
+                        }
+                    });
                 });
 
-                if (usageCount >= trigger.usageLimit) {
-                    console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Usage limit reached (${usageCount}/${trigger.usageLimit})`);
-                    return;
-                }
-            }
+                // 5. Schedule the first step (outside transaction, after successful commit)
+                await this.scheduleStep(execution.id, 0);
 
-            console.log(`[FlowEngine] Matched Trigger '${trigger.keyword}' -> Flow ${trigger.flowId}`);
-            await this.startFlow(trigger, message.sender, sessionId);
+            } catch (error: any) {
+                // Handle validation errors gracefully
+                if (error.message?.startsWith('COOLDOWN:')) {
+                    console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Cooldown active (${error.message.replace('COOLDOWN:', '')}ms)`);
+                } else if (error.message?.startsWith('LIMIT:')) {
+                    console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Usage limit reached (${error.message.replace('LIMIT:', '')})`);
+                } else {
+                    console.error(`[FlowEngine] Error starting flow:`, error);
+                }
+            } finally {
+                // 6. Always release the lock
+                await redis.del(lockKey);
+            }
         }
     }
 
     /**
      * Initializes a new Flow Execution and schedules Step 0.
+     * @deprecated Now handled atomically inside processIncomingMessage transaction
      */
     private async startFlow(trigger: Trigger, userId: string, sessionId: string) {
         console.log(`[FlowEngine] Starting flow ${trigger.flowId} for user ${userId}`);
