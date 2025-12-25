@@ -6,7 +6,7 @@ import { authMiddleware } from "../middleware/auth.middleware";
 
 export const botController = new Elysia({ prefix: "/bots" })
     .use(authMiddleware)
-    .isSignIn()
+    .guard({ isSignIn: true })
     // List all bots
     .get("/", async ({ user }) => {
         if (user.role === Role.SUPER_ADMIN) {
