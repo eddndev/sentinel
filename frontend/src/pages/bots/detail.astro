@@ -124,18 +124,18 @@ import BotConnection from "../../components/BotConnection.astro";
         </header>
 
         <!-- Tabs -->
-        <div class="border-b border-white/10 mb-8 flex gap-8">
+        <div class="flex gap-2 mb-8 bg-white/5 p-1 rounded-full w-fit">
             <button
                 @click="activeTab = 'flows'"
-                class="pb-4 text-sm font-mono uppercase tracking-widest border-b-2 transition-colors"
-                :class="activeTab === 'flows' ? 'border-brand-purple text-white' : 'border-transparent text-gray-500 hover:text-white'"
+                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
+                :class="activeTab === 'flows' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
             >
                 <span x-text="$t('flows')">Flows</span>
             </button>
             <button
                 @click="activeTab = 'logs'; loadLogs()"
-                class="pb-4 text-sm font-mono uppercase tracking-widest border-b-2 transition-colors"
-                :class="activeTab === 'logs' ? 'border-brand-purple text-white' : 'border-transparent text-gray-500 hover:text-white'"
+                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
+                :class="activeTab === 'logs' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
             >
                 <span x-text="$t('logs')">Logs</span>
             </button>
