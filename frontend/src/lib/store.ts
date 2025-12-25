@@ -28,6 +28,30 @@ export const botStore = {
     }
 };
 
+export const sidebarStore = {
+    expanded: true,
+    mobileOpen: false,
+
+    init() {
+        const persisted = localStorage.getItem('sidebar_expanded');
+        this.expanded = persisted === null ? true : persisted === 'true';
+    },
+
+    toggle() {
+        this.expanded = !this.expanded;
+        localStorage.setItem('sidebar_expanded', String(this.expanded));
+    },
+
+    toggleMobile() {
+        this.mobileOpen = !this.mobileOpen;
+    },
+
+    closeMobile() {
+        this.mobileOpen = false;
+    }
+};
+
 export default (Alpine: any) => {
     Alpine.store('bot', botStore);
+    Alpine.store('sidebar', sidebarStore);
 };
