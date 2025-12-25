@@ -116,8 +116,8 @@ import BotConnection from "../../components/BotConnection.astro";
                     <div class="px-4 pt-4 mb-2">
                         <h3
                             class="text-xs text-brand-purple uppercase tracking-widest"
+                            x-text="$t('connection')"
                         >
-                            Connection
                         </h3>
                     </div>
 
@@ -366,7 +366,10 @@ import BotConnection from "../../components/BotConnection.astro";
                                 </div>
                             </template>
                             <template x-if="!connected && !qr">
-                                <button @click="connect()" :disabled="loading" class="w-full px-4 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50" x-text="loading ? $t('initializing') : $t('start_connection')"></button>
+                                <button @click="connect()" :disabled="loading" class="w-full px-4 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors disabled:opacity-50 rounded-full" x-text="loading ? $t('initializing') : $t('start_connection')"></button>
+                            </template>
+                            <template x-if="connected">
+                                <button @click="disconnect()" :disabled="loading" class="w-full px-4 py-2 bg-red-500/20 text-red-400 border border-red-500/30 font-mono uppercase text-xs tracking-widest hover:bg-red-500/30 transition-colors disabled:opacity-50 rounded-full" x-text="loading ? $t('disconnecting') : $t('disconnect')"></button>
                             </template>
                         </div>
                     </div>
@@ -445,6 +448,29 @@ import BotConnection from "../../components/BotConnection.astro";
                     } catch (e: unknown) {
                         const error = e as Error;
                         alert(error.message || "Failed to start connection");
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                async disconnect() {
+                    // @ts-ignore
+                    if (
+                        !confirm(
+                            this.$t("disconnect_confirm") ||
+                                "¿Desconectar este bot de WhatsApp?",
+                        )
+                    )
+                        return;
+
+                    this.loading = true;
+                    try {
+                        await ApiClient.post(`/bots/${botId}/disconnect`, {});
+                        this.connected = false;
+                        this.qr = null;
+                    } catch (e: unknown) {
+                        const error = e as Error;
+                        alert(error.message || "Failed to disconnect");
                     } finally {
                         this.loading = false;
                     }

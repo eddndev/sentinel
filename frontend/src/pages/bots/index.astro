@@ -47,9 +47,8 @@ try {
 			</div>
 
 			<button
-				x-data="createBotModal"
-				@click="open()"
-				class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2"
+				@click="$dispatch('open-create-bot')"
+				class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
 			>
 				<span>+</span>
 				<span x-text="$t('create_bot')">Create Bot</span>
@@ -163,6 +162,7 @@ try {
 		x-data="createBotModal"
 		x-show="visible"
 		x-cloak
+		@open-create-bot.window="open()"
 		class="fixed inset-0 z-50 flex items-center justify-center"
 		style="display: none;"
 	>

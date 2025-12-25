@@ -72,6 +72,15 @@ export const botController = new Elysia({ prefix: "/bots" })
             user: session?.user
         };
     })
+    .post("/:id/disconnect", async ({ params: { id }, set }) => {
+        try {
+            await BaileysService.stopSession(id);
+            return { success: true, message: "Session disconnected successfully" };
+        } catch (e: any) {
+            set.status = 500;
+            return `Failed to disconnect session: ${e.message}`;
+        }
+    })
     // Generic /:id routes AFTER specific ones
     .get("/:id", async ({ params: { id }, set }) => {
         const bot = await prisma.bot.findUnique({

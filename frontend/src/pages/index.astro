@@ -55,20 +55,6 @@ try {
 			</h1>
 
 			<div class="flex items-center gap-4">
-				<div class="flex border border-white/10 overflow-hidden">
-					<button
-						@click="$store.i18n.setLocale('en')"
-						class="px-3 py-1 text-[10px] font-mono transition-colors"
-						:class="$store.i18n.locale === 'en' ? 'bg-brand-purple text-white' : 'text-white/40 hover:bg-white/5'"
-						>EN</button
-					>
-					<button
-						@click="$store.i18n.setLocale('es')"
-						class="px-3 py-1 text-[10px] font-mono transition-colors border-l border-white/10"
-						:class="$store.i18n.locale === 'es' ? 'bg-brand-purple text-white' : 'text-white/40 hover:bg-white/5'"
-						>ES</button
-					>
-				</div>
 				<div
 					class="px-3 py-1 border border-white/20 text-xs font-mono text-white/60"
 				>

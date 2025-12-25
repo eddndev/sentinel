@@ -71,5 +71,11 @@ export default {
     // Common
     loading: "Loading...",
     error: "Error",
-    success: "Success"
+    success: "Success",
+    connection: "Connection",
+    disconnect_confirm: "Disconnect this bot from WhatsApp?",
+    disconnecting: "Disconnecting...",
+    usage_limit: "Limit",
+    cooldown: "Cooldown",
+    edit_bot: "Edit Bot"
 };

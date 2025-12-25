@@ -67,10 +67,27 @@ const menuItems = [
         </template>
     </nav>
 
-    <!-- Footer / Language Toggle (optional move here?) -->
-    <div class="absolute bottom-4 left-0 w-full px-2">
+    <!-- Footer / Language Toggle -->
+    <div class="absolute bottom-4 left-0 w-full px-2 space-y-2">
+        <!-- Language Toggle -->
+        <div class="flex border border-white/10 overflow-hidden">
+            <button
+                @click="$store.i18n.setLocale('en')"
+                class="flex-1 px-2 py-1.5 text-[10px] font-mono transition-colors"
+                :class="$store.i18n.locale === 'en' ? 'bg-brand-purple text-white' : 'text-white/40 hover:bg-white/5'"
+                >EN</button
+            >
+            <button
+                @click="$store.i18n.setLocale('es')"
+                class="flex-1 px-2 py-1.5 text-[10px] font-mono transition-colors border-l border-white/10"
+                :class="$store.i18n.locale === 'es' ? 'bg-brand-purple text-white' : 'text-white/40 hover:bg-white/5'"
+                >ES</button
+            >
+        </div>
+
+        <!-- Version -->
         <div
-            class="p-3 text-[10px] font-mono text-gray-500 uppercase border border-white/5 bg-white/5 hidden md:block"
+            class="p-3 text-[10px] font-mono text-gray-500 uppercase border border-white/5 bg-white/5 hidden md:block text-center"
         >
             V 1.0.2-BETA
         </div>

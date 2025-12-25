@@ -181,6 +181,28 @@ export class BaileysService {
         return sessions.get(botId);
     }
 
+    static async stopSession(botId: string) {
+        const sock = sessions.get(botId);
+        if (sock) {
+            try {
+                await sock.logout();
+            } catch (e) {
+                console.log(`[Baileys] Error during logout for bot ${botId}:`, e);
+            }
+            sessions.delete(botId);
+        }
+        qrCodes.delete(botId);
+
+        // Optionally clear auth data to require new QR scan
+        const sessionDir = path.join(AUTH_DIR, botId);
+        if (fs.existsSync(sessionDir)) {
+            fs.rmSync(sessionDir, { recursive: true, force: true });
+            console.log(`[Baileys] Cleared auth data for bot ${botId}`);
+        }
+
+        console.log(`[Baileys] Session stopped for bot ${botId}`);
+    }
+
     static async sendMessage(botId: string, to: string, content: any) {
         const sock = sessions.get(botId);
         if (!sock) {
