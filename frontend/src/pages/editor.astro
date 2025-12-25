@@ -86,67 +86,100 @@ import MediaPicker from "../components/MediaPicker.astro";
                             :key="index"
                         >
                             <div
-                                class="bg-[#0f172a] p-3 border border-white/10 space-y-2"
+                                class="bg-[#0f172a] p-4 border border-white/10 space-y-3"
                             >
                                 <!-- Row 1: Match Type + Keyword + Delete -->
-                                <div class="flex gap-2 items-center">
+                                <div class="flex gap-3 items-center">
                                     <select
                                         x-model="trigger.matchType"
-                                        class="bg-transparent text-[10px] font-mono text-gray-400 border-r border-white/10 pr-2 focus:outline-none"
+                                        class="bg-white/10 text-xs font-mono text-white px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple"
                                     >
                                         <template
                                             x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
                                         >
-                                            <option :value="opt" x-text="opt"
-                                            ></option>
+                                            <option
+                                                :value="opt"
+                                                x-text="opt"
+                                                class="bg-[#0f172a]"></option>
                                         </template>
                                     </select>
                                     <input
                                         type="text"
                                         x-model="trigger.keyword"
-                                        class="bg-transparent text-sm flex-1 focus:outline-none"
+                                        class="bg-white/5 text-sm flex-1 px-3 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
                                         :placeholder="$t('keyword')"
                                     />
                                     <button
                                         @click="removeTrigger(index)"
-                                        class="text-red-500 hover:text-red-400 font-bold px-2"
+                                        class="text-red-500 hover:text-red-400 font-bold px-3 py-1 text-lg"
                                         >&times;</button
                                     >
                                 </div>
                                 <!-- Row 2: Usage Limit + Cooldown -->
                                 <div
-                                    class="flex gap-4 text-[10px] font-mono text-gray-500"
+                                    class="flex gap-6 text-xs font-mono text-gray-400"
                                 >
-                                    <div class="flex items-center gap-1">
+                                    <div class="flex items-center gap-2">
                                         <span
                                             x-text="$t('usage_limit') || 'Límite'"
                                             >Límite</span
                                         >:
                                         <select
                                             x-model="trigger.usageLimit"
-                                            class="bg-transparent text-white focus:outline-none"
+                                            class="bg-white/10 text-white px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple"
                                         >
-                                            <option value="0">∞</option>
-                                            <option value="1">1x</option>
-                                            <option value="3">3x</option>
-                                            <option value="5">5x</option>
-                                            <option value="10">10x</option>
+                                            <option
+                                                value="0"
+                                                class="bg-[#0f172a]">∞</option
+                                            >
+                                            <option
+                                                value="1"
+                                                class="bg-[#0f172a]">1x</option
+                                            >
+                                            <option
+                                                value="3"
+                                                class="bg-[#0f172a]">3x</option
+                                            >
+                                            <option
+                                                value="5"
+                                                class="bg-[#0f172a]">5x</option
+                                            >
+                                            <option
+                                                value="10"
+                                                class="bg-[#0f172a]">10x</option
+                                            >
                                         </select>
                                     </div>
-                                    <div class="flex items-center gap-1">
+                                    <div class="flex items-center gap-2">
                                         <span
                                             x-text="$t('cooldown') || 'Cooldown'"
                                             >Cooldown</span
                                         >:
                                         <select
                                             x-model="trigger.cooldownMs"
-                                            class="bg-transparent text-white focus:outline-none"
+                                            class="bg-white/10 text-white px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple"
                                         >
-                                            <option value="0">-</option>
-                                            <option value="60000">1min</option>
-                                            <option value="300000">5min</option>
-                                            <option value="3600000">1h</option>
-                                            <option value="86400000">24h</option
+                                            <option
+                                                value="0"
+                                                class="bg-[#0f172a]">-</option
+                                            >
+                                            <option
+                                                value="60000"
+                                                class="bg-[#0f172a]"
+                                                >1min</option
+                                            >
+                                            <option
+                                                value="300000"
+                                                class="bg-[#0f172a]"
+                                                >5min</option
+                                            >
+                                            <option
+                                                value="3600000"
+                                                class="bg-[#0f172a]">1h</option
+                                            >
+                                            <option
+                                                value="86400000"
+                                                class="bg-[#0f172a]">24h</option
                                             >
                                         </select>
                                     </div>
@@ -209,34 +242,48 @@ import MediaPicker from "../components/MediaPicker.astro";
 
                                 <div class="pl-8">
                                     <div
-                                        class="flex justify-between text-[10px] font-mono text-gray-500 mb-2 uppercase tracking-wide"
+                                        class="flex justify-between text-xs font-mono text-gray-400 mb-3 uppercase tracking-wide items-center"
                                     >
-                                        <span x-text="step.type"></span>
+                                        <span
+                                            x-text="step.type"
+                                            class="text-brand-purple font-bold"
+                                        ></span>
                                         <div
-                                            class="flex gap-3 items-center flex-wrap"
+                                            class="flex gap-4 items-center flex-wrap"
                                         >
-                                            <span class="text-gray-600">
+                                            <span
+                                                class="flex items-center gap-1 text-gray-400"
+                                            >
                                                 <span x-text="$t('delay')"
                                                 ></span>:
                                                 <input
                                                     type="number"
                                                     x-model="step.delayMs"
-                                                    class="w-12 bg-transparent text-right focus:outline-none text-white"
+                                                    class="w-16 bg-white/10 text-center px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple text-white"
                                                     min="0"
-                                                />ms
+                                                /><span class="text-gray-500"
+                                                    >ms</span
+                                                >
                                             </span>
-                                            <span class="text-gray-600">
-                                                ±<input
+                                            <span
+                                                class="flex items-center gap-1 text-gray-400"
+                                            >
+                                                <span class="text-gray-500"
+                                                    >±</span
+                                                >
+                                                <input
                                                     type="number"
                                                     x-model="step.jitterPct"
-                                                    class="w-8 bg-transparent text-right focus:outline-none text-white"
+                                                    class="w-14 bg-white/10 text-center px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple text-white"
                                                     min="0"
                                                     max="100"
-                                                />%
+                                                /><span class="text-gray-500"
+                                                    >%</span
+                                                >
                                             </span>
                                             <button
                                                 @click="removeStep(index)"
-                                                class="text-red-500 hover:text-white"
+                                                class="text-red-500 hover:text-white px-2 py-1 hover:bg-red-500/20 transition-colors"
                                                 x-text="$t('remove')"></button>
                                         </div>
                                     </div>
