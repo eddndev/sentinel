@@ -115,37 +115,41 @@ import "../styles/global.css";
         </main>
 
         <script>
-            import Alpine from "alpinejs";
             import { ApiClient } from "../lib/api";
 
-            Alpine.data("loginForm", () => ({
-                email: "",
-                password: "",
-                loading: false,
-                errorMessage: "",
+            document.addEventListener("alpine:init", () => {
+                Alpine.data("loginForm", () => ({
+                    email: "",
+                    password: "",
+                    loading: false,
+                    errorMessage: "",
 
-                async submit() {
-                    this.loading = true;
-                    this.errorMessage = "";
+                    async submit() {
+                        this.loading = true;
+                        this.errorMessage = "";
 
-                    try {
-                        const response = await ApiClient.post("/auth/login", {
-                            email: this.email,
-                            password: this.password,
-                        });
+                        try {
+                            const response = await ApiClient.post(
+                                "/auth/login",
+                                {
+                                    email: this.email,
+                                    password: this.password,
+                                },
+                            );
 
-                        if (response.success) {
-                            window.location.href = "/";
+                            if (response.success) {
+                                window.location.href = "/";
+                            }
+                        } catch (e) {
+                            console.error(e);
+                            this.errorMessage =
+                                "ACCESS DENIED: Invalid credentials";
+                        } finally {
+                            this.loading = false;
                         }
-                    } catch (e) {
-                        console.error(e);
-                        this.errorMessage =
-                            "ACCESS DENIED: Invalid credentials";
-                    } finally {
-                        this.loading = false;
-                    }
-                },
-            }));
+                    },
+                }));
+            });
         </script>
     </body>
 </html>
