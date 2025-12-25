@@ -55,12 +55,12 @@ stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0
 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" ></path> </svg> </div>
 <div> <h3 class="font-bold uppercase tracking-tight text-gray-500" > Analytics
 </h3> <p class="text-xs text-gray-600 font-mono mt-1"> Coming in v2.0 </p>
-</div> </div> </div> </section> </main> </Layout> <script> declare const Alpine:
-any; import { ApiClient } from "../lib/api";
-document.addEventListener("alpine:init", () => { Alpine.data("dashboardStats",
-() => ({ loading: true, error: false, stats: { botCount: 0, flowCount: 0, },
-async init() { try { const [bots, flows] = await Promise.all([
-ApiClient.get("/bots"), ApiClient.get("/flows"), ]); this.stats.botCount =
-bots.length; this.stats.flowCount = flows.length; } catch (e) {
-console.error("Dashboard Stats Error:", e); this.error = true; } finally {
-this.loading = false; } }, })); }); </script> ```
+</div> </div> </div> </section> </main> </Layout> <script> import { ApiClient }
+from "../lib/api"; document.addEventListener("alpine:init", () => { //
+@ts-ignore const Alpine = window.Alpine; Alpine.data("dashboardStats", () => ({
+loading: true, error: false, stats: { botCount: 0, flowCount: 0, }, async init()
+{ try { const [bots, flows] = await Promise.all([ ApiClient.get("/bots"),
+ApiClient.get("/flows"), ]); this.stats.botCount = bots.length;
+this.stats.flowCount = flows.length; } catch (e) { console.error("Dashboard
+Stats Error:", e); this.error = true; } finally { this.loading = false; } },
+})); }); </script> ```
