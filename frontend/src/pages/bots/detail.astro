@@ -63,6 +63,26 @@ import BotConnection from "../../components/BotConnection.astro";
                     <span x-text="$t('new_flow')">New Flow</span>
                 </a>
                 <button
+                    @click="openImportModal()"
+                    class="px-4 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors rounded-full flex items-center gap-2"
+                    :title="$t('import_flow') || 'Import Flow'"
+                >
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                        ></path>
+                    </svg>
+                    <span x-text="$t('import') || 'Import'">Import</span>
+                </button>
+                <button
                     @click="editBot()"
                     class="px-4 py-2 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors rounded-full"
                     :title="$t('edit')"
@@ -277,6 +297,90 @@ import BotConnection from "../../components/BotConnection.astro";
             </a>
         </div>
     </div>
+
+    <!-- Import Flow Modal -->
+    <div
+        x-show="showImportModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        style="display: none;"
+    >
+        <div
+            class="bg-[#0f172a] border border-white/10 p-8 max-w-md w-full relative"
+            @click.outside="showImportModal = false"
+        >
+            <div class="cross-marker -top-[2px] -left-[2px]"></div>
+            <div class="cross-marker -top-[2px] -right-[2px]"></div>
+            <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+            <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+            <h2 class="text-xl font-bold uppercase mb-6 tracking-tight">
+                Import Flow
+            </h2>
+
+            <div class="space-y-4">
+                <!-- Step 1: Source Bot -->
+                <div>
+                    <label
+                        class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                        >Source Bot</label
+                    >
+                    <select
+                        x-model="importData.sourceBotId"
+                        @change="loadSourceFlows()"
+                        class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                    >
+                        <option value="">Select a Bot...</option>
+                        <template x-for="b in sourceBots" :key="b.id">
+                            <option
+                                :value="b.id"
+                                x-text="b.name + ' (' + b.identifier + ')'"
+                                class="bg-[#0f172a]"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Step 2: Source Flow -->
+                <div x-show="importData.sourceBotId">
+                    <label
+                        class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                        >Flow to Import</label
+                    >
+                    <select
+                        x-model="importData.sourceFlowId"
+                        class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                    >
+                        <option value="">Select a Flow...</option>
+                        <template x-for="f in sourceFlows" :key="f.id">
+                            <option
+                                :value="f.id"
+                                x-text="f.name"
+                                class="bg-[#0f172a]"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3">
+                    <button
+                        @click="showImportModal = false"
+                        class="px-4 py-2 border border-white/10 text-gray-400 text-xs uppercase hover:bg-white/5 transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        @click="importFlow()"
+                        :disabled="!importData.sourceFlowId || loadingImport"
+                        class="px-6 py-2 bg-brand-purple text-white text-xs uppercase hover:bg-brand-purple/80 transition-colors disabled:opacity-50 flex items-center gap-2"
+                    >
+                        <span
+                            x-show="loadingImport"
+                            class="animate-spin text-white">⟳</span
+                        >
+                        Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </Layout>
 
 <script>
@@ -312,6 +416,16 @@ import BotConnection from "../../components/BotConnection.astro";
             ready: false,
             error: null as string | null,
             connectionHtml: "",
+
+            // Import State
+            showImportModal: false,
+            loadingImport: false,
+            sourceBots: [] as Bot[],
+            sourceFlows: [] as Flow[],
+            importData: {
+                sourceBotId: "",
+                sourceFlowId: "",
+            },
 
             async init() {
                 const params = new URLSearchParams(window.location.search);
@@ -393,6 +507,57 @@ import BotConnection from "../../components/BotConnection.astro";
                 } catch (e: unknown) {
                     const error = e as Error;
                     alert(error.message || "Failed to delete bot");
+                }
+            },
+
+            async openImportModal() {
+                this.showImportModal = true;
+                this.importData = { sourceBotId: "", sourceFlowId: "" };
+                this.sourceFlows = [];
+
+                try {
+                    // Fetch all bots to choose from
+                    this.sourceBots = await ApiClient.get("/bots");
+                    // Filter out current bot optionally, but maybe self-import/duplication is useful?
+                    // Let's keep it to allow duplicating flows within same bot.
+                } catch (e) {
+                    console.error("Failed to load bots", e);
+                }
+            },
+
+            async loadSourceFlows() {
+                if (!this.importData.sourceBotId) {
+                    this.sourceFlows = [];
+                    return;
+                }
+                try {
+                    this.sourceFlows = await ApiClient.get(
+                        `/flows?botId=${this.importData.sourceBotId}`,
+                    );
+                } catch (e) {
+                    console.error("Failed to load flows", e);
+                }
+            },
+
+            async importFlow() {
+                if (!this.importData.sourceFlowId) return;
+
+                this.loadingImport = true;
+                try {
+                    await ApiClient.post("/flows/import", {
+                        sourceFlowId: this.importData.sourceFlowId,
+                        targetBotId: this.botId,
+                    });
+
+                    this.showImportModal = false;
+                    // Reload flows
+                    this.flows = await ApiClient.get(
+                        `/flows?botId=${this.botId}`,
+                    );
+                } catch (e: any) {
+                    alert("Import failed: " + (e.message || "Unknown error"));
+                } finally {
+                    this.loadingImport = false;
                 }
             },
         }));
