@@ -251,7 +251,9 @@
             },
 
             select(url: string) {
-                if (this.callback) this.callback(url);
+                // Always return full URL for backend processing
+                const fullUrl = this.getApiUrl(url);
+                if (this.callback) this.callback(fullUrl);
                 this.close();
             },
         }));
