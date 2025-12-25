@@ -119,5 +119,58 @@ export const flowController = new Elysia({ prefix: "/flows" })
             set.status = 500;
             return { error: "Failed to delete flow" };
         }
+    })
+    .post("/import", async ({ body, set }) => {
+        const { sourceFlowId, targetBotId } = body as { sourceFlowId: string, targetBotId: string };
+
+        if (!sourceFlowId || !targetBotId) {
+            set.status = 400;
+            return { error: "Missing sourceFlowId or targetBotId" };
+        }
+
+        try {
+            const sourceFlow = await prisma.flow.findUnique({
+                where: { id: sourceFlowId },
+                include: { steps: true, triggers: true }
+            });
+
+            if (!sourceFlow) {
+                set.status = 404;
+                return { error: "Source flow not found" };
+            }
+
+            const newFlow = await prisma.flow.create({
+                data: {
+                    botId: targetBotId,
+                    name: `${sourceFlow.name} (Copy)`,
+                    description: sourceFlow.description,
+                    usageLimit: sourceFlow.usageLimit,
+                    cooldownMs: sourceFlow.cooldownMs,
+                    steps: {
+                        create: sourceFlow.steps.map(s => ({
+                            type: s.type,
+                            content: s.content,
+                            mediaUrl: s.mediaUrl,
+                            delayMs: s.delayMs,
+                            jitterPct: s.jitterPct,
+                            order: s.order
+                        }))
+                    },
+                    triggers: {
+                        create: sourceFlow.triggers.map(t => ({
+                            keyword: t.keyword,
+                            matchType: t.matchType,
+                            botId: targetBotId
+                        }))
+                    }
+                },
+                include: { steps: true, triggers: true }
+            });
+
+            return newFlow;
+        } catch (e: any) {
+            set.status = 500;
+            return { error: `Import failed: ${e.message}` };
+        }
     });
 
