@@ -24,13 +24,15 @@ import Layout from "../../layouts/Layout.astro";
 				</p>
 			</div>
 
-			<button
-				@click="$dispatch('open-create-bot')"
-				class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
-			>
-				<span>+</span>
-				<span x-text="$t('create_bot')">Create Bot</span>
-			</button>
+			<template x-if="$store.auth.user?.role !== 'VIEWER'">
+				<button
+					@click="$dispatch('open-create-bot')"
+					class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
+				>
+					<span>+</span>
+					<span x-text="$t('create_bot')">Create Bot</span>
+				</button>
+			</template>
 		</header>
 
 		<!-- Error State -->
@@ -151,12 +153,15 @@ import Layout from "../../layouts/Layout.astro";
 				>
 					No bots registered
 				</p>
-				<button
-					@click="$dispatch('open-create-bot')"
-					class="px-6 py-2 bg-brand-purple text-white hover:bg-brand-purple/80 transition-colors uppercase text-xs tracking-wider"
-				>
-					+ <span x-text="$t('create_bot')">Create First Bot</span>
-				</button>
+				<template x-if="$store.auth.user?.role !== 'VIEWER'">
+					<button
+						@click="$dispatch('open-create-bot')"
+						class="px-6 py-2 bg-brand-purple text-white hover:bg-brand-purple/80 transition-colors uppercase text-xs tracking-wider"
+					>
+						+ <span x-text="$t('create_bot')">Create First Bot</span
+						>
+					</button>
+				</template>
 			</div>
 		</div>
 	</main>

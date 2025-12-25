@@ -38,12 +38,34 @@ enum StepType {
   PTT // "Voice Note" (Push-To-Talk) simulation
 }
 
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  VIEWER
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  fullName      String?
+  role          Role     @default(ADMIN)
+  isActive      Boolean  @default(true)
+  bots          Bot[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
 model Bot {
   id          String   @id @default(uuid())
   name        String
   platform    Platform
   identifier  String   @unique // Phone number (WhatsApp) or Token (Telegram)
   credentials Json?    // { apiKey, webhookVerifyToken, etc. }
+  
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id])
   
   flows       Flow[]
   sessions    Session[]

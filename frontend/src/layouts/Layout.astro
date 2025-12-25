@@ -13,13 +13,44 @@ const { title } = Astro.props;
 	import Alpine from "alpinejs";
 	import { i18nPlugin } from "../i18n";
 	import storePlugin from "../lib/store";
+	import { ApiClient } from "../lib/api";
 
 	document.addEventListener("alpine:init", () => {
 		i18nPlugin(Alpine);
 		storePlugin(Alpine);
+
+		// Auth Store
+		Alpine.store("auth", {
+			user: null,
+			loading: true,
+			init() {
+				this.checkSession();
+			},
+			async checkSession() {
+				try {
+					const response = await ApiClient.get("/auth/me");
+					this.user = response;
+					this.loading = false;
+				} catch (e) {
+					console.error("Auth check failed", e);
+					window.location.href = "/login";
+				}
+			},
+			async logout() {
+				try {
+					await ApiClient.post("/auth/logout", {});
+					window.location.href = "/login";
+				} catch (e) {
+					console.error("Logout failed", e);
+				}
+			},
+		});
+
 		// Initialize stores
 		Alpine.store("bot").init();
 		Alpine.store("sidebar").init();
+		// @ts-ignore
+		Alpine.store("auth").init();
 	});
 </script>
 
@@ -34,6 +65,10 @@ const { title } = Astro.props;
 	<body
 		class="selection:bg-brand-purple selection:text-white relative bg-slate-950 min-h-screen text-slate-200 font-mono antialiased overflow-x-hidden"
 		x-data
+		x-cloak
+		style="display: none !important;"
+		x-show="!$store.auth.loading"
+		x-init="$el.style.display = ''"
 	>
 		<!-- Sidebar -->
 		<Sidebar />

@@ -144,22 +144,57 @@ const menuItems = [
             v1.0.2-BETA
         </div>
 
-        <!-- User/Profile Placeholder (Icon only when collapsed) -->
-        <div class="flex items-center gap-3 px-1 py-1">
+        <!-- User/Profile -->
+        <div
+            class="px-2 py-2 border-t border-white/5 bg-[#020617] flex-shrink-0"
+        >
             <div
-                class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-purple to-blue-600 flex items-center justify-center text-xs font-bold text-white shadow-lg shrink-0"
+                class="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors group cursor-pointer relative"
+                @click="$store.auth.logout()"
+                title="Logout"
             >
-                A
-            </div>
-            <div
-                class="overflow-hidden transition-all duration-300"
-                :class="$store.sidebar.expanded ? 'w-auto opacity-100' : 'w-0 opacity-0'"
-            >
-                <div class="text-xs font-bold text-white whitespace-nowrap">
-                    Admin User
+                <div
+                    class="w-8 h-8 rounded-full bg-gradient-to-tr from-brand-purple to-blue-600 flex items-center justify-center text-xs font-bold text-white shadow-lg shrink-0"
+                    x-text="$store.auth.user?.fullName?.charAt(0) || $store.auth.user?.email?.charAt(0) || '?'"
+                >
+                    ?
                 </div>
-                <div class="text-[9px] text-gray-500 whitespace-nowrap">
-                    admin@sentinel.com
+
+                <div
+                    class="overflow-hidden transition-all duration-300"
+                    :class="$store.sidebar.expanded ? 'w-auto opacity-100' : 'w-0 opacity-0'"
+                >
+                    <div
+                        class="text-xs font-bold text-white whitespace-nowrap"
+                        x-text="$store.auth.user?.fullName || 'User'"
+                    >
+                    </div>
+                    <div
+                        class="text-[9px] text-gray-500 whitespace-nowrap"
+                        x-text="$store.auth.user?.email"
+                    >
+                    </div>
+                </div>
+
+                <!-- Logout Icon (Visible on hover or when collapsed) -->
+                <div
+                    class="absolute right-2 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    x-show="$store.sidebar.expanded"
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        ></path>
+                    </svg>
                 </div>
             </div>
         </div>
