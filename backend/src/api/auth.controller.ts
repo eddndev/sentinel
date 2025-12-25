@@ -2,7 +2,7 @@ import { Elysia, t } from "elysia";
 import { AuthService } from "../services/auth.service";
 import { authMiddleware } from "../middleware/auth.middleware";
 
-export const authController = new Elysia({ prefix: "/api/auth" })
+export const authController = new Elysia({ prefix: "/auth" })
     .use(authMiddleware)
     .post("/login", async ({ body, jwt, cookie: { auth_token }, error }) => {
         const { email, password } = body;
