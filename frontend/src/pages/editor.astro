@@ -94,13 +94,33 @@ import MediaPicker from "../components/MediaPicker.astro";
                                     x-text="$t('usage_limit')"></label>
                                 <select
                                     x-model="flow.usageLimit"
-                                    class="w-full bg-white/5 text-white text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                    class="w-full bg-white/5 text-gray-200 text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
                                 >
-                                    <option value="0">∞</option>
-                                    <option value="1">1x</option>
-                                    <option value="3">3x</option>
-                                    <option value="5">5x</option>
-                                    <option value="10">10x</option>
+                                    <option
+                                        value="0"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >∞</option
+                                    >
+                                    <option
+                                        value="1"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >1x</option
+                                    >
+                                    <option
+                                        value="3"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >3x</option
+                                    >
+                                    <option
+                                        value="5"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >5x</option
+                                    >
+                                    <option
+                                        value="10"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >10x</option
+                                    >
                                 </select>
                             </div>
                             <div class="flex-1">
@@ -109,13 +129,33 @@ import MediaPicker from "../components/MediaPicker.astro";
                                     x-text="$t('cooldown')"></label>
                                 <select
                                     x-model="flow.cooldownMs"
-                                    class="w-full bg-white/5 text-white text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                    class="w-full bg-white/5 text-gray-200 text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
                                 >
-                                    <option value="0">-</option>
-                                    <option value="60000">1min</option>
-                                    <option value="300000">5min</option>
-                                    <option value="3600000">1h</option>
-                                    <option value="86400000">24h</option>
+                                    <option
+                                        value="0"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >-</option
+                                    >
+                                    <option
+                                        value="60000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >1min</option
+                                    >
+                                    <option
+                                        value="300000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >5min</option
+                                    >
+                                    <option
+                                        value="3600000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >1h</option
+                                    >
+                                    <option
+                                        value="86400000"
+                                        class="bg-[#0f172a] text-gray-300"
+                                        >24h</option
+                                    >
                                 </select>
                             </div>
                         </div>
@@ -194,7 +234,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                 </div>
 
                 <div
-                    class="flex-1 overflow-y-auto bg-brand-panel/10 border border-white/5 relative bg-[url('/grid.svg')]"
+                    class="flex-1 overflow-y-auto bg-brand-panel/10 border border-white/5 relative"
                 >
                     <div id="steps-container" class="p-6 space-y-4 pb-20">
                         <template
