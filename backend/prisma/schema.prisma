@@ -87,8 +87,6 @@ model Trigger {
   matchType   MatchType @default(CONTAINS)
   
   isActive    Boolean   @default(true)
-  usageLimit  Int       @default(0) 
-  cooldownMs  Int       @default(0) 
   
   flowId      String
   flow        Flow      @relation(fields: [flowId], references: [id])
@@ -105,6 +103,9 @@ model Flow {
 
   name        String
   description String?
+  
+  usageLimit  Int       @default(0)
+  cooldownMs  Int       @default(0)
   
   steps       Step[]
   triggers    Trigger[]

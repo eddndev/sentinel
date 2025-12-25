@@ -40,6 +40,8 @@ export const flowController = new Elysia({ prefix: "/flows" })
                     botId,
                     name,
                     description,
+                    usageLimit: parseInt(body.usageLimit || 0),
+                    cooldownMs: parseInt(body.cooldownMs || 0),
                     steps: {
                         create: (steps || []).map((s: any, index: number) => ({
                             type: (s.type as StepType),
@@ -80,6 +82,8 @@ export const flowController = new Elysia({ prefix: "/flows" })
                     data: {
                         name,
                         description,
+                        usageLimit: parseInt(body.usageLimit || 0),
+                        cooldownMs: parseInt(body.cooldownMs || 0),
                         steps: {
                             create: (steps || []).map((s: any, index: number) => ({
                                 type: (s.type as StepType),

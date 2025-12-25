@@ -80,6 +80,47 @@ import MediaPicker from "../components/MediaPicker.astro";
                         >
                     </div>
 
+                    <!-- Flow Global Settings -->
+                    <div class="mb-4 bg-[#0f172a] p-3 border border-white/10">
+                        <h4
+                            class="text-[10px] text-gray-500 uppercase font-mono mb-2"
+                        >
+                            Flow Limits
+                        </h4>
+                        <div class="flex gap-4">
+                            <div class="flex-1">
+                                <label
+                                    class="block text-[10px] text-gray-400 font-mono mb-1"
+                                    x-text="$t('usage_limit')"></label>
+                                <select
+                                    x-model="flow.usageLimit"
+                                    class="w-full bg-white/5 text-white text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                >
+                                    <option value="0">∞</option>
+                                    <option value="1">1x</option>
+                                    <option value="3">3x</option>
+                                    <option value="5">5x</option>
+                                    <option value="10">10x</option>
+                                </select>
+                            </div>
+                            <div class="flex-1">
+                                <label
+                                    class="block text-[10px] text-gray-400 font-mono mb-1"
+                                    x-text="$t('cooldown')"></label>
+                                <select
+                                    x-model="flow.cooldownMs"
+                                    class="w-full bg-white/5 text-white text-xs px-2 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
+                                >
+                                    <option value="0">-</option>
+                                    <option value="60000">1min</option>
+                                    <option value="300000">5min</option>
+                                    <option value="3600000">1h</option>
+                                    <option value="86400000">24h</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="space-y-3">
                         <template
                             x-for="(trigger, index) in flow.triggers"
@@ -114,75 +155,6 @@ import MediaPicker from "../components/MediaPicker.astro";
                                         class="text-red-500 hover:text-red-400 font-bold px-3 py-1 text-lg"
                                         >&times;</button
                                     >
-                                </div>
-                                <!-- Row 2: Usage Limit + Cooldown -->
-                                <div
-                                    class="flex gap-6 text-xs font-mono text-gray-400"
-                                >
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            x-text="$t('usage_limit') || 'Límite'"
-                                            >Límite</span
-                                        >:
-                                        <select
-                                            x-model="trigger.usageLimit"
-                                            class="bg-white/10 text-white px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple"
-                                        >
-                                            <option
-                                                value="0"
-                                                class="bg-[#0f172a]">∞</option
-                                            >
-                                            <option
-                                                value="1"
-                                                class="bg-[#0f172a]">1x</option
-                                            >
-                                            <option
-                                                value="3"
-                                                class="bg-[#0f172a]">3x</option
-                                            >
-                                            <option
-                                                value="5"
-                                                class="bg-[#0f172a]">5x</option
-                                            >
-                                            <option
-                                                value="10"
-                                                class="bg-[#0f172a]">10x</option
-                                            >
-                                        </select>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span
-                                            x-text="$t('cooldown') || 'Cooldown'"
-                                            >Cooldown</span
-                                        >:
-                                        <select
-                                            x-model="trigger.cooldownMs"
-                                            class="bg-white/10 text-white px-2 py-1 border border-white/20 focus:outline-none focus:border-brand-purple"
-                                        >
-                                            <option
-                                                value="0"
-                                                class="bg-[#0f172a]">-</option
-                                            >
-                                            <option
-                                                value="60000"
-                                                class="bg-[#0f172a]"
-                                                >1min</option
-                                            >
-                                            <option
-                                                value="300000"
-                                                class="bg-[#0f172a]"
-                                                >5min</option
-                                            >
-                                            <option
-                                                value="3600000"
-                                                class="bg-[#0f172a]">1h</option
-                                            >
-                                            <option
-                                                value="86400000"
-                                                class="bg-[#0f172a]">24h</option
-                                            >
-                                        </select>
-                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -382,8 +354,6 @@ import MediaPicker from "../components/MediaPicker.astro";
     interface Trigger {
         keyword: string;
         matchType: string;
-        usageLimit?: number;
-        cooldownMs?: number;
     }
     interface Step {
         id?: string;
@@ -398,6 +368,8 @@ import MediaPicker from "../components/MediaPicker.astro";
     interface Flow {
         name: string;
         description: string;
+        usageLimit: number;
+        cooldownMs: number;
         triggers: Trigger[];
         steps: Step[];
     }
@@ -415,6 +387,8 @@ import MediaPicker from "../components/MediaPicker.astro";
             flow: {
                 name: "",
                 description: "",
+                usageLimit: 0,
+                cooldownMs: 0,
                 triggers: [],
                 steps: [],
             } as Flow,
@@ -501,8 +475,6 @@ import MediaPicker from "../components/MediaPicker.astro";
                 this.flow.triggers.push({
                     keyword: "",
                     matchType: "CONTAINS",
-                    usageLimit: 0,
-                    cooldownMs: 0,
                 });
             },
 
@@ -559,11 +531,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                         s.jitterPct = parseInt(s.jitterPct as any, 10) || 10;
                     });
 
-                    // Convert trigger numeric types
-                    this.flow.triggers.forEach((t: Trigger) => {
-                        t.usageLimit = parseInt(t.usageLimit as any, 10) || 0;
-                        t.cooldownMs = parseInt(t.cooldownMs as any, 10) || 0;
-                    });
+                    // Convert trigger numeric types is no longer needed/relevant for limits, but kept for robustness if other fields exist
 
                     if (!this.id || this.id === "new") {
                         // Create

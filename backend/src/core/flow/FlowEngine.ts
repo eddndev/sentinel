@@ -58,7 +58,8 @@ export class FlowEngine {
                 // 4. Atomic validation and execution creation using Prisma transaction
                 const execution = await prisma.$transaction(async (tx) => {
                     // 4a. Validate Cooldown
-                    if (trigger.cooldownMs > 0) {
+                    // 4a. Validate Cooldown
+                    if (trigger.flow.cooldownMs > 0) {
                         const lastExecution = await tx.execution.findFirst({
                             where: { sessionId, flowId: trigger.flowId },
                             orderBy: { startedAt: 'desc' }
@@ -66,20 +67,20 @@ export class FlowEngine {
 
                         if (lastExecution) {
                             const elapsed = Date.now() - lastExecution.startedAt.getTime();
-                            if (elapsed < trigger.cooldownMs) {
-                                throw new Error(`COOLDOWN:${elapsed}/${trigger.cooldownMs}`);
+                            if (elapsed < trigger.flow.cooldownMs) {
+                                throw new Error(`COOLDOWN:${elapsed}/${trigger.flow.cooldownMs}`);
                             }
                         }
                     }
 
                     // 4b. Validate Usage Limit
-                    if (trigger.usageLimit > 0) {
+                    if (trigger.flow.usageLimit > 0) {
                         const usageCount = await tx.execution.count({
                             where: { sessionId, flowId: trigger.flowId }
                         });
 
-                        if (usageCount >= trigger.usageLimit) {
-                            throw new Error(`LIMIT:${usageCount}/${trigger.usageLimit}`);
+                        if (usageCount >= trigger.flow.usageLimit) {
+                            throw new Error(`LIMIT:${usageCount}/${trigger.flow.usageLimit}`);
                         }
                     }
 
