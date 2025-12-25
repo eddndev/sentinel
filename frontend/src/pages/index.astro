@@ -1,66 +1,224 @@
-``` --- import Layout from "../layouts/Layout.astro"; --- <Layout
-title="Dashboard"> <main class="space-y-8" x-data="dashboardStats"> <!-- Header
---> <header class="flex justify-between items-center border-b border-white/10
-pb-6 relative" > <div class="cross-marker -bottom-[5px] -left-[5px]"></div> <div
-class="cross-marker -bottom-[5px] -right-[5px]"></div> <h1 class="text-3xl
-font-bold tracking-tighter uppercase relative z-10" > Sentinel <span
-class="text-brand-purple text-xs tracking-[0.3em] align-top ml-2" >v1.0.0</span
-> </h1> <div class="flex items-center gap-4"> <div class="px-3 py-1 border
-border-white/20 text-xs font-mono text-white/60" :class="error ? 'text-red-400
-border-red-500/30' : 'text-green-400 border-green-500/30'" > SYSTEM: <span
-x-text="error ? 'OFFLINE' : (loading ? 'CONNECTING...' :
-'ONLINE')">CONNECTING...</span> </div> </div> </header> <!-- Stats Grid --> <div
-class="grid grid-cols-1 md:grid-cols-3 gap-6"> <!-- Active Bots --> <a
-href="/bots" class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm
-relative group hover:border-brand-purple/30 transition-all" > <div
-class="cross-marker -top-[2px] -left-[2px]"></div> <div class="cross-marker
--top-[2px] -right-[2px]"></div> <div class="flex justify-between items-start">
-<div> <h2 class="text-xs text-brand-purple uppercase tracking-widest mb-4"
-x-text="$t('active_bots')" > Active Bots </h2> <div class="text-4xl font-mono
-font-light"> <span x-show="loading" class="animate-pulse">...</span> <span
-x-show="!loading" x-text="stats.botCount">0</span> </div> </div> <svg class="w-5
-h-5 text-gray-600 group-hover:text-brand-purple transition-colors" fill="none"
-viewBox="0 0 24 24" stroke="currentColor" > <path stroke-linecap="round"
-stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path> </svg> </div>
-</a> <!-- Total Flows --> <div class="p-6 bg-brand-panel/50 border
-border-white/5 backdrop-blur-sm relative" > <h2 class="text-xs text-brand-purple
-uppercase tracking-widest mb-4" x-text="$t('total_flows')" > Total Flows </h2>
-<div class="text-4xl font-mono font-light"> <span x-show="loading"
-class="animate-pulse">...</span> <span x-show="!loading"
-x-text="stats.flowCount">0</span> </div> </div> <!-- Executions (Placeholder)
---> <div class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm
-relative" > <h2 class="text-xs text-brand-purple uppercase tracking-widest mb-4"
-x-text="$t('executions')" > Executions </h2> <div class="text-4xl font-mono
-font-light text-green-400"> -- </div> <p class="text-[10px] text-gray-500
-font-mono mt-2"> Coming soon </p> </div> </div> <!-- Quick Actions --> <section
-class="border-t border-white/10 pt-8"> <h2 class="text-xs text-brand-purple
-uppercase tracking-widest mb-6" > Quick Actions </h2> <div class="grid
-grid-cols-1 md:grid-cols-2 gap-4"> <a href="/bots" class="p-6 border
-border-white/10 hover:border-brand-purple/30 transition-all group flex
-items-center gap-4" > <div class="w-12 h-12 bg-brand-purple/10 flex items-center
-justify-center" > <svg class="w-6 h-6 text-brand-purple" fill="none" viewBox="0
-0 24 24" stroke="currentColor" > <path stroke-linecap="round"
-stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2
-6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0
-002 2zM9 9h6v6H9V9z" ></path> </svg> </div> <div> <h3 class="font-bold uppercase
-tracking-tight group-hover:text-brand-purple transition-colors"
-x-text="$t('manage_flows')" > Manage Bots & Flows </h3> <p class="text-xs
-text-gray-500 font-mono mt-1"> Configure your messaging bots </p> </div> </a>
-<div class="p-6 border border-dashed border-white/10 flex items-center gap-4
-opacity-50" > <div class="w-12 h-12 bg-white/5 flex items-center justify-center"
-> <svg class="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24"
-stroke="currentColor" > <path stroke-linecap="round" stroke-linejoin="round"
-stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0
-002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2
-2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" ></path> </svg> </div>
-<div> <h3 class="font-bold uppercase tracking-tight text-gray-500" > Analytics
-</h3> <p class="text-xs text-gray-600 font-mono mt-1"> Coming in v2.0 </p>
-</div> </div> </div> </section> </main> </Layout> <script> import { ApiClient }
-from "../lib/api"; document.addEventListener("alpine:init", () => { //
-@ts-ignore const Alpine = window.Alpine; Alpine.data("dashboardStats", () => ({
-loading: true, error: false, stats: { botCount: 0, flowCount: 0, }, async init()
-{ try { const [bots, flows] = await Promise.all([ ApiClient.get("/bots"),
-ApiClient.get("/flows"), ]); this.stats.botCount = bots.length;
-this.stats.flowCount = flows.length; } catch (e) { console.error("Dashboard
-Stats Error:", e); this.error = true; } finally { this.loading = false; } },
-})); }); </script> ```
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Dashboard">
+    <main class="space-y-8" x-data="dashboardStats">
+        <!-- Header -->
+        <header
+            class="flex justify-between items-center border-b border-white/10 pb-6 relative"
+        >
+            <div class="cross-marker -bottom-[5px] -left-[5px]"></div>
+            <div class="cross-marker -bottom-[5px] -right-[5px]"></div>
+
+            <h1
+                class="text-3xl font-bold tracking-tighter uppercase relative z-10"
+            >
+                Sentinel <span
+                    class="text-brand-purple text-xs tracking-[0.3em] align-top ml-2"
+                    >v1.0.0</span
+                >
+            </h1>
+
+            <div class="flex items-center gap-4">
+                <div
+                    class="px-3 py-1 border border-white/20 text-xs font-mono text-white/60"
+                    :class="error ? 'text-red-400 border-red-500/30' : 'text-green-400 border-green-500/30'"
+                >
+                    SYSTEM: <span
+                        x-text="error ? 'OFFLINE' : (loading ? 'CONNECTING...' : 'ONLINE')"
+                        >CONNECTING...</span
+                    >
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Active Bots -->
+            <a
+                href="/bots"
+                class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative group hover:border-brand-purple/30 transition-all"
+            >
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2
+                            class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+                            x-text="$t('active_bots')"
+                        >
+                            Active Bots
+                        </h2>
+                        <div class="text-4xl font-mono font-light">
+                            <span x-show="loading" class="animate-pulse"
+                                >...</span
+                            >
+                            <span x-show="!loading" x-text="stats.botCount"
+                                >0</span
+                            >
+                        </div>
+                    </div>
+                    <svg
+                        class="w-5 h-5 text-gray-600 group-hover:text-brand-purple transition-colors"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </div>
+            </a>
+
+            <!-- Total Flows -->
+            <div
+                class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative"
+            >
+                <h2
+                    class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+                    x-text="$t('total_flows')"
+                >
+                    Total Flows
+                </h2>
+                <div class="text-4xl font-mono font-light">
+                    <span x-show="loading" class="animate-pulse">...</span>
+                    <span x-show="!loading" x-text="stats.flowCount">0</span>
+                </div>
+            </div>
+
+            <!-- Executions (Placeholder) -->
+            <div
+                class="p-6 bg-brand-panel/50 border border-white/5 backdrop-blur-sm relative"
+            >
+                <h2
+                    class="text-xs text-brand-purple uppercase tracking-widest mb-4"
+                    x-text="$t('executions')"
+                >
+                    Executions
+                </h2>
+                <div class="text-4xl font-mono font-light text-green-400">
+                    --
+                </div>
+                <p class="text-[10px] text-gray-500 font-mono mt-2">
+                    Coming soon
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <section class="border-t border-white/10 pt-8">
+            <h2
+                class="text-xs text-brand-purple uppercase tracking-widest mb-6"
+            >
+                Quick Actions
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <a
+                    href="/bots"
+                    class="p-6 border border-white/10 hover:border-brand-purple/30 transition-all group flex items-center gap-4"
+                >
+                    <div
+                        class="w-12 h-12 bg-brand-purple/10 flex items-center justify-center"
+                    >
+                        <svg
+                            class="w-6 h-6 text-brand-purple"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                            ></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="font-bold uppercase tracking-tight group-hover:text-brand-purple transition-colors"
+                            x-text="$t('manage_flows')"
+                        >
+                            Manage Bots & Flows
+                        </h3>
+                        <p class="text-xs text-gray-500 font-mono mt-1">
+                            Configure your messaging bots
+                        </p>
+                    </div>
+                </a>
+
+                <div
+                    class="p-6 border border-dashed border-white/10 flex items-center gap-4 opacity-50"
+                >
+                    <div
+                        class="w-12 h-12 bg-white/5 flex items-center justify-center"
+                    >
+                        <svg
+                            class="w-6 h-6 text-gray-500"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="1.5"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                            ></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3
+                            class="font-bold uppercase tracking-tight text-gray-500"
+                        >
+                            Analytics
+                        </h3>
+                        <p class="text-xs text-gray-600 font-mono mt-1">
+                            Coming in v2.0
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</Layout>
+
+<script>
+    import { ApiClient } from "../lib/api";
+
+    document.addEventListener("alpine:init", () => {
+        // @ts-ignore
+        const Alpine = window.Alpine;
+
+        Alpine.data("dashboardStats", () => ({
+            loading: true,
+            error: false,
+            stats: {
+                botCount: 0,
+                flowCount: 0,
+            },
+
+            async init() {
+                try {
+                    const [bots, flows] = await Promise.all([
+                        ApiClient.get("/bots"),
+                        ApiClient.get("/flows"),
+                    ]);
+                    this.stats.botCount = bots.length;
+                    this.stats.flowCount = flows.length;
+                } catch (e) {
+                    console.error("Dashboard Stats Error:", e);
+                    this.error = true;
+                } finally {
+                    this.loading = false;
+                }
+            },
+        }));
+    });
+</script>
