@@ -44,68 +44,87 @@ export class BaileysService {
 
         console.log(`[Baileys] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
-        // @ts-ignore
-        const sock = makeWASocket({
-            version,
-            logger,
-            printQRInTerminal: false,
-            auth: {
-                creds: state.creds,
-                keys: makeCacheableSignalKeyStore(state.keys, logger),
-            },
-            generateHighQualityLinkPreview: true,
-        });
+        try {
+            // @ts-ignore
+            const sock = makeWASocket({
+                version,
+                logger,
+                printQRInTerminal: false,
+                auth: {
+                    creds: state.creds,
+                    keys: makeCacheableSignalKeyStore(state.keys, logger),
+                },
+                generateHighQualityLinkPreview: true,
+                // Increase timeout for QR generation if possible, or handle via connection update
+                qrTimeout: 60000,
+            });
 
-        sessions.set(botId, sock);
+            sessions.set(botId, sock);
 
-        sock.ev.on('creds.update', saveCreds);
+            sock.ev.on('creds.update', saveCreds);
 
-        sock.ev.on('connection.update', async (update) => {
-            const { connection, lastDisconnect, qr } = update;
+            sock.ev.on('connection.update', async (update) => {
+                const { connection, lastDisconnect, qr } = update;
 
-            if (qr) {
-                console.log(`[Baileys] QR Received for Bot ${botId}`);
-                try {
-                    const url = await QRCode.toDataURL(qr);
-                    qrCodes.set(botId, url);
-                } catch (err) {
-                    console.error("QR Generation Error", err);
+                if (qr) {
+                    console.log(`[Baileys] QR Received for Bot ${botId}`);
+                    try {
+                        const url = await QRCode.toDataURL(qr);
+                        qrCodes.set(botId, url);
+                    } catch (err) {
+                        console.error("QR Generation Error", err);
+                    }
                 }
-            }
 
-            if (connection === 'close') {
-                const shouldReconnect = (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
-                console.log(`[Baileys] Connection closed for Bot ${botId}. Reconnecting: ${shouldReconnect}`, lastDisconnect?.error);
+                if (connection === 'close') {
+                    const error = lastDisconnect?.error as Boom;
+                    const statusCode = error?.output?.statusCode;
+                    const shouldReconnect = statusCode !== DisconnectReason.loggedOut && statusCode !== 408; // 408 is Request Timeout (QR ended)
 
-                sessions.delete(botId);
-                qrCodes.delete(botId);
+                    console.log(`[Baileys] Connection closed for Bot ${botId}. Code: ${statusCode}, Reconnecting: ${shouldReconnect}`, error);
 
-                if (shouldReconnect) {
-                    // Backoff delay before reconnect
-                    setTimeout(() => this.startSession(botId), 5000);
-                } else {
-                    console.log(`[Baileys] Bot ${botId} logged out.`);
+                    sessions.delete(botId);
+                    qrCodes.delete(botId);
+
+                    if (shouldReconnect) {
+                        // Backoff delay before reconnect
+                        setTimeout(() => this.startSession(botId), 5000);
+                    } else {
+                        console.log(`[Baileys] Bot ${botId} stopped (Logged out or QR timeout).`);
+                        // Optionally clean up session dir if it was a QR timeout to force fresh start
+                        if (statusCode === 408) {
+                            // this.stopSession(botId); // Clean up
+                        }
+                    }
+                } else if (connection === 'open') {
+                    console.log(`[Baileys] Connection opened for Bot ${botId}`);
+                    qrCodes.delete(botId);
                 }
-            } else if (connection === 'open') {
-                console.log(`[Baileys] Connection opened for Bot ${botId}`);
-                qrCodes.delete(botId);
+            });
+
+            sock.ev.on('messages.upsert', async ({ messages, type }) => {
+                if (type !== 'notify') return;
+
+                for (const msg of messages) {
+                    if (!msg.message) continue;
+                    // Avoid processing status updates or broadcast messages if needed
+                    if (msg.key.remoteJid === 'status@broadcast') continue;
+
+                    // @ts-ignore
+                    await this.handleIncomingMessage(botId, msg);
+                }
+            });
+
+            return sock;
+
+        } catch (error: any) {
+            console.error(`[Baileys] Failed to start session for bot ${botId}:`, error);
+            if (error.message?.includes('QR refs attempts ended')) {
+                console.log(`[Baileys] QR timeout for bot ${botId}. Removing session to allow fresh retry.`);
+                this.stopSession(botId);
             }
-        });
-
-        sock.ev.on('messages.upsert', async ({ messages, type }) => {
-            if (type !== 'notify') return;
-
-            for (const msg of messages) {
-                if (!msg.message) continue;
-                // Avoid processing status updates or broadcast messages if needed
-                if (msg.key.remoteJid === 'status@broadcast') continue;
-
-                // @ts-ignore
-                await this.handleIncomingMessage(botId, msg);
-            }
-        });
-
-        return sock;
+            return null;
+        }
     }
 
     private static async handleIncomingMessage(botId: string, msg: WAMessage & { message: any }) { // Type intersection specific to local context
