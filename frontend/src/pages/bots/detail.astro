@@ -123,8 +123,29 @@ import BotConnection from "../../components/BotConnection.astro";
             </div>
         </header>
 
-        <!-- Two Column Layout -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Tabs -->
+        <div class="border-b border-white/10 mb-8 flex gap-8">
+            <button
+                @click="activeTab = 'flows'"
+                class="pb-4 text-sm font-mono uppercase tracking-widest border-b-2 transition-colors"
+                :class="activeTab === 'flows' ? 'border-brand-purple text-white' : 'border-transparent text-gray-500 hover:text-white'"
+            >
+                <span x-text="$t('flows')">Flows</span>
+            </button>
+            <button
+                @click="activeTab = 'logs'; loadLogs()"
+                class="pb-4 text-sm font-mono uppercase tracking-widest border-b-2 transition-colors"
+                :class="activeTab === 'logs' ? 'border-brand-purple text-white' : 'border-transparent text-gray-500 hover:text-white'"
+            >
+                <span x-text="$t('logs')">Logs</span>
+            </button>
+        </div>
+
+        <!-- Flows Tab -->
+        <div
+            x-show="activeTab === 'flows'"
+            class="grid grid-cols-1 lg:grid-cols-3 gap-8"
+        >
             <!-- Connection Panel -->
             <div class="lg:col-span-1">
                 <div
@@ -262,123 +283,312 @@ import BotConnection from "../../components/BotConnection.astro";
                     </template>
                 </div>
             </div>
+        </div>
 
-            <!-- Loading State -->
-            <div
-                x-data="botDetail"
-                x-show="!ready && !error"
-                class="flex items-center justify-center min-h-[60vh]"
-            >
-                <div
-                    class="text-brand-purple animate-pulse text-xs font-mono uppercase"
-                    x-text="$t('loading')"
-                >
-                    Loading...
-                </div>
-            </div>
+        <!-- Logs Tab -->
+        <div x-show="activeTab === 'logs'" style="display: none;">
+            <div class="bg-brand-panel/30 border border-white/5 p-6 relative">
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
 
-            <!-- Error State -->
-            <div
-                x-data="botDetail"
-                x-show="error"
-                class="flex items-center justify-center min-h-[60vh]"
-            >
-                <div class="text-center">
-                    <h1 class="text-4xl font-bold text-red-500 mb-4">404</h1>
-                    <p
-                        class="text-gray-500 font-mono uppercase mb-8"
-                        x-text="error"
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-4 mb-6 items-end">
+                    <div>
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_status')">Status</label
+                        >
+                        <select
+                            x-model="filters.status"
+                            @change="loadLogs()"
+                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 min-w-[120px] focus:border-brand-purple focus:outline-none"
+                        >
+                            <option value="ALL" x-text="$t('status_all')"
+                                >All</option
+                            >
+                            <option
+                                value="COMPLETED"
+                                x-text="$t('status_completed')"
+                                >Completed</option
+                            >
+                            <option value="FAILED" x-text="$t('status_failed')"
+                                >Failed</option
+                            >
+                        </select>
+                    </div>
+
+                    <div class="flex-1 min-w-[200px]">
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_user')">User</label
+                        >
+                        <input
+                            type="text"
+                            x-model="filters.search"
+                            @input.debounce="loadLogs()"
+                            class="w-full bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none placeholder-gray-700"
+                            :placeholder="$t('filter_user') + ' / Trigger...'"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_date_from')">From</label
+                        >
+                        <input
+                            type="date"
+                            x-model="filters.startDate"
+                            @change="loadLogs()"
+                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-[10px] font-mono text-gray-500 uppercase mb-1"
+                            x-text="$t('filter_date_to')">To</label
+                        >
+                        <input
+                            type="date"
+                            x-model="filters.endDate"
+                            @change="loadLogs()"
+                            class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
+                        />
+                    </div>
+
+                    <button
+                        @click="loadLogs()"
+                        class="px-4 py-2 border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                        :title="$t('refresh')"
                     >
-                    </p>
-                    <a
-                        href="/bots"
-                        class="px-6 py-3 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors"
-                    >
-                        ← Back to Bots
-                    </a>
+                        <span :class="{'animate-spin': loadingLogs}">⟳</span>
+                    </button>
                 </div>
-            </div>
 
-            <!-- Import Flow Modal -->
-            <div
-                x-show="showImportModal"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-                style="display: none;"
-            >
-                <div
-                    class="bg-[#0f172a] border border-white/10 p-8 max-w-md w-full relative"
-                    @click.outside="showImportModal = false"
-                >
-                    <div class="cross-marker -top-[2px] -left-[2px]"></div>
-                    <div class="cross-marker -top-[2px] -right-[2px]"></div>
-                    <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
-                    <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
-
-                    <h2 class="text-xl font-bold uppercase mb-6 tracking-tight">
-                        Import Flow
-                    </h2>
-
-                    <div class="space-y-4">
-                        <!-- Step 1: Source Bot -->
-                        <div>
-                            <label
-                                class="block text-xs font-mono text-gray-400 mb-2 uppercase"
-                                >Source Bot</label
+                <!-- Logs Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="text-[10px] uppercase font-mono text-gray-500 border-b border-white/10"
                             >
-                            <select
-                                x-model="importData.sourceBotId"
-                                @change="loadSourceFlows()"
-                                class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
-                            >
-                                <option value="">Select a Bot...</option>
-                                <template x-for="b in sourceBots" :key="b.id">
-                                    <option
-                                        :value="b.id"
-                                        x-text="b.name + ' (' + b.identifier + ')'"
-                                        class="bg-[#0f172a]"></option>
-                                </template>
-                            </select>
-                        </div>
-
-                        <!-- Step 2: Source Flow -->
-                        <div x-show="importData.sourceBotId">
-                            <label
-                                class="block text-xs font-mono text-gray-400 mb-2 uppercase"
-                                >Flow to Import</label
-                            >
-                            <select
-                                x-model="importData.sourceFlowId"
-                                class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
-                            >
-                                <option value="">Select a Flow...</option>
-                                <template x-for="f in sourceFlows" :key="f.id">
-                                    <option
-                                        :value="f.id"
-                                        x-text="f.name"
-                                        class="bg-[#0f172a]"></option>
-                                </template>
-                            </select>
-                        </div>
-
-                        <div class="pt-4 flex justify-end gap-3">
-                            <button
-                                @click="showImportModal = false"
-                                class="px-4 py-2 border border-white/10 text-gray-400 text-xs uppercase hover:bg-white/5 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                @click="importFlow()"
-                                :disabled="!importData.sourceFlowId || loadingImport"
-                                class="px-6 py-2 bg-brand-purple text-white text-xs uppercase hover:bg-brand-purple/80 transition-colors disabled:opacity-50 flex items-center gap-2"
-                            >
-                                <span
-                                    x-show="loadingImport"
-                                    class="animate-spin text-white">⟳</span
+                                <th class="p-3" x-text="$t('col_status')"
+                                    >Status</th
                                 >
-                                Import
-                            </button>
-                        </div>
+                                <th class="p-3" x-text="$t('col_date')">Date</th
+                                >
+                                <th class="p-3" x-text="$t('col_user')">User</th
+                                >
+                                <th class="p-3" x-text="$t('col_flow')">Flow</th
+                                >
+                                <th class="p-3" x-text="$t('col_trigger')"
+                                    >Trigger</th
+                                >
+                                <th class="p-3" x-text="$t('col_error')"
+                                    >Error</th
+                                >
+                            </tr>
+                        </thead>
+                        <tbody class="text-xs font-mono">
+                            <template x-if="loadingLogs">
+                                <tr
+                                    ><td
+                                        colspan="6"
+                                        class="p-8 text-center text-gray-500"
+                                        x-text="$t('loading')">Loading...</td
+                                    ></tr
+                                >
+                            </template>
+                            <template x-if="!loadingLogs && logs.length === 0">
+                                <tr
+                                    ><td
+                                        colspan="6"
+                                        class="p-8 text-center text-gray-500"
+                                        x-text="$t('no_logs')">No logs found</td
+                                    ></tr
+                                >
+                            </template>
+
+                            <template x-for="log in logs" :key="log.id">
+                                <tr
+                                    class="border-b border-white/5 hover:bg-white/5 transition-colors"
+                                >
+                                    <td class="p-3">
+                                        <span
+                                            x-show="log.status === 'COMPLETED'"
+                                            class="text-green-500">✔</span
+                                        >
+                                        <span
+                                            x-show="log.status === 'FAILED'"
+                                            class="text-red-500">✖</span
+                                        >
+                                        <span
+                                            x-show="log.status === 'RUNNING'"
+                                            class="text-blue-500 animate-pulse"
+                                            >●</span
+                                        >
+                                    </td>
+                                    <td
+                                        class="p-3 text-gray-400"
+                                        x-text="formatDate(log.startedAt)"></td>
+                                    <td
+                                        class="p-3 text-white"
+                                        x-text="log.platformUserId"></td>
+                                    <td
+                                        class="p-3 text-brand-purple"
+                                        x-text="log.flow?.name || '-'"></td>
+                                    <td class="p-3 text-gray-400">
+                                        <span
+                                            x-show="log.trigger"
+                                            class="bg-white/5 px-1 py-0.5"
+                                            x-text="log.trigger"></span>
+                                        <span x-show="!log.trigger">-</span>
+                                    </td>
+                                    <td class="p-3">
+                                        <template x-if="log.error">
+                                            <div
+                                                class="group relative inline-block cursor-help"
+                                            >
+                                                <span
+                                                    class="text-red-400 truncate max-w-[150px] block"
+                                                    x-text="log.error"></span>
+                                                <!-- Tooltip -->
+                                                <div
+                                                    class="absolute bottom-full left-0 mb-1 w-64 p-2 bg-black border border-red-500/30 text-red-200 text-[10px] rounded hidden group-hover:block z-50 shadow-xl"
+                                                >
+                                                    <span x-text="log.error"
+                                                    ></span>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <span
+                                            x-show="!log.error"
+                                            class="text-gray-600">-</span
+                                        >
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Loading State -->
+        <div
+            x-data="botDetail"
+            x-show="!ready && !error"
+            class="flex items-center justify-center min-h-[60vh]"
+        >
+            <div
+                class="text-brand-purple animate-pulse text-xs font-mono uppercase"
+                x-text="$t('loading')"
+            >
+                Loading...
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div
+            x-data="botDetail"
+            x-show="error"
+            class="flex items-center justify-center min-h-[60vh]"
+        >
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-red-500 mb-4">404</h1>
+                <p
+                    class="text-gray-500 font-mono uppercase mb-8"
+                    x-text="error"
+                >
+                </p>
+                <a
+                    href="/bots"
+                    class="px-6 py-3 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors"
+                >
+                    ← Back to Bots
+                </a>
+            </div>
+        </div>
+
+        <!-- Import Flow Modal -->
+        <div
+            x-show="showImportModal"
+            class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            style="display: none;"
+        >
+            <div
+                class="bg-[#0f172a] border border-white/10 p-8 max-w-md w-full relative"
+                @click.outside="showImportModal = false"
+            >
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+                <h2 class="text-xl font-bold uppercase mb-6 tracking-tight">
+                    Import Flow
+                </h2>
+
+                <div class="space-y-4">
+                    <!-- Step 1: Source Bot -->
+                    <div>
+                        <label
+                            class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                            >Source Bot</label
+                        >
+                        <select
+                            x-model="importData.sourceBotId"
+                            @change="loadSourceFlows()"
+                            class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                        >
+                            <option value="">Select a Bot...</option>
+                            <template x-for="b in sourceBots" :key="b.id">
+                                <option
+                                    :value="b.id"
+                                    x-text="b.name + ' (' + b.identifier + ')'"
+                                    class="bg-[#0f172a]"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <!-- Step 2: Source Flow -->
+                    <div x-show="importData.sourceBotId">
+                        <label
+                            class="block text-xs font-mono text-gray-400 mb-2 uppercase"
+                            >Flow to Import</label
+                        >
+                        <select
+                            x-model="importData.sourceFlowId"
+                            class="w-full bg-black/40 border border-white/10 text-white text-sm p-3 focus:border-brand-purple focus:outline-none"
+                        >
+                            <option value="">Select a Flow...</option>
+                            <template x-for="f in sourceFlows" :key="f.id">
+                                <option
+                                    :value="f.id"
+                                    x-text="f.name"
+                                    class="bg-[#0f172a]"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button
+                            @click="showImportModal = false"
+                            class="px-4 py-2 border border-white/10 text-gray-400 text-xs uppercase hover:bg-white/5 transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            @click="importFlow()"
+                            :disabled="!importData.sourceFlowId || loadingImport"
+                            class="px-6 py-2 bg-brand-purple text-white text-xs uppercase hover:bg-brand-purple/80 transition-colors disabled:opacity-50 flex items-center gap-2"
+                        >
+                            <span
+                                x-show="loadingImport"
+                                class="animate-spin text-white">⟳</span
+                            >
+                            Import
+                        </button>
                     </div>
                 </div>
             </div>
@@ -411,6 +621,24 @@ import BotConnection from "../../components/BotConnection.astro";
         triggers: Trigger[];
     }
 
+    interface Execution {
+        id: string;
+        status: string;
+        startedAt: string;
+        completedAt?: string;
+        platformUserId: string;
+        trigger?: string;
+        error?: string;
+        flow: { name: string };
+    }
+
+    interface LogFilters {
+        status: string;
+        search: string;
+        startDate: string;
+        endDate: string;
+    }
+
     document.addEventListener("alpine:init", () => {
         Alpine.data("botDetail", () => ({
             botId: null as string | null,
@@ -429,6 +657,18 @@ import BotConnection from "../../components/BotConnection.astro";
                 sourceBotId: "",
                 sourceFlowId: "",
             },
+
+            // Logs State
+            activeTab: "flows", // 'flows' | 'logs'
+            logs: [] as Execution[],
+            loadingLogs: false,
+            logsPagination: { total: 0, limit: 50, offset: 0 },
+            filters: {
+                status: "ALL",
+                search: "",
+                startDate: "",
+                endDate: "",
+            } as LogFilters,
 
             async init() {
                 const params = new URLSearchParams(window.location.search);
@@ -540,6 +780,38 @@ import BotConnection from "../../components/BotConnection.astro";
                 } catch (e) {
                     console.error("Failed to load flows", e);
                 }
+            },
+
+            async loadLogs() {
+                this.loadingLogs = true;
+                try {
+                    const params = new URLSearchParams();
+                    params.append("botId", this.botId!);
+                    params.append("limit", "50");
+                    if (this.filters.status !== "ALL")
+                        params.append("status", this.filters.status);
+                    if (this.filters.search)
+                        params.append("search", this.filters.search);
+                    if (this.filters.startDate)
+                        params.append("startDate", this.filters.startDate);
+                    if (this.filters.endDate)
+                        params.append("endDate", this.filters.endDate);
+
+                    const res = await ApiClient.get(
+                        `/executions?${params.toString()}`,
+                    );
+                    this.logs = res.data;
+                    this.logsPagination = res.pagination;
+                } catch (e) {
+                    console.error("Failed to load logs", e);
+                } finally {
+                    this.loadingLogs = false;
+                }
+            },
+
+            formatDate(dateStr: string) {
+                if (!dateStr) return "-";
+                return new Date(dateStr).toLocaleString();
             },
 
             async importFlow() {

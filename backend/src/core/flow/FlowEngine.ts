@@ -94,7 +94,8 @@ export class FlowEngine {
                             platformUserId: message.sender,
                             status: "RUNNING",
                             currentStep: 0,
-                            variableContext: {}
+                            variableContext: {},
+                            trigger: trigger.keyword
                         }
                     });
                 });
@@ -104,13 +105,44 @@ export class FlowEngine {
 
             } catch (error: any) {
                 // Handle validation errors gracefully
+                let errorMessage = error.message;
+
                 if (error.message?.startsWith('COOLDOWN:')) {
                     console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Cooldown active (${error.message.replace('COOLDOWN:', '')}ms)`);
+                    errorMessage = `Cooldown active (${error.message.replace('COOLDOWN:', '')}ms)`;
                 } else if (error.message?.startsWith('LIMIT:')) {
                     console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Usage limit reached (${error.message.replace('LIMIT:', '')})`);
+                    errorMessage = `Usage limit reached (${error.message.replace('LIMIT:', '')})`;
                 } else {
                     console.error(`[FlowEngine] Error starting flow:`, error);
                 }
+
+                // Log the failed attempt if we can (requires session context)
+                // Note: We can't update the transaction-based execution if the transaction failed. 
+                // We should record a separate FAILED execution check.
+                // However, creating a FAILED record might also trigger limits if logic is not careful.
+                // For now, let's just log failures for non-validation errors (unexpected crashes).
+                // Validation errors (limit/cooldown) are technically "ignored" triggers, not "failed" executions in the crash sense.
+                // But the user wants execution logs. Let's create a FAILED record if it was a limit issue, OUTSIDE the transaction.
+
+                if (['COOLDOWN:', 'LIMIT:'].some(p => error.message?.startsWith(p))) {
+                    try {
+                        await prisma.execution.create({
+                            data: {
+                                sessionId,
+                                flowId: trigger.flowId,
+                                platformUserId: message.sender,
+                                status: "FAILED",
+                                currentStep: 0,
+                                variableContext: {},
+                                trigger: trigger.keyword,
+                                error: errorMessage,
+                                completedAt: new Date()
+                            }
+                        });
+                    } catch (e) { /* Ignore log failure */ }
+                }
+
             } finally {
                 // 6. Always release the lock
                 await redis.del(lockKey);
@@ -133,7 +165,8 @@ export class FlowEngine {
                 platformUserId: userId,
                 status: "RUNNING",
                 currentStep: 0,
-                variableContext: {} // Could inject captured regex groups here
+                variableContext: {}, // Could inject captured regex groups here
+                trigger: trigger.keyword
             }
         });
 

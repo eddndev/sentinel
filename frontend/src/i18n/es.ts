@@ -77,5 +77,23 @@ export default {
     disconnecting: "Desconectando...",
     usage_limit: "Límite",
     cooldown: "Cooldown",
-    edit_bot: "Editar Bot"
+    edit_bot: "Editar Bot",
+
+    // Logs & Analytics
+    logs: "Registros",
+    filter_status: "Estado",
+    filter_user: "Usuario (Tel)",
+    filter_date_from: "Desde",
+    filter_date_to: "Hasta",
+    refresh: "Actualizar",
+    status_all: "Todos",
+    status_completed: "Completados",
+    status_failed: "Fallidos",
+    col_status: "Estado",
+    col_date: "Fecha",
+    col_user: "Usuario",
+    col_flow: "Flujo",
+    col_trigger: "Disparador",
+    col_error: "Error",
+    no_logs: "No se encontraron registros"
 };

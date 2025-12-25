@@ -77,5 +77,23 @@ export default {
     disconnecting: "Disconnecting...",
     usage_limit: "Limit",
     cooldown: "Cooldown",
-    edit_bot: "Edit Bot"
+    edit_bot: "Edit Bot",
+
+    // Logs & Analytics
+    logs: "Logs",
+    filter_status: "Status",
+    filter_user: "User (Phone)",
+    filter_date_from: "From",
+    filter_date_to: "To",
+    refresh: "Refresh",
+    status_all: "All",
+    status_completed: "Completed",
+    status_failed: "Failed",
+    col_status: "Status",
+    col_date: "Date",
+    col_user: "User",
+    col_flow: "Flow",
+    col_trigger: "Trigger",
+    col_error: "Error",
+    no_logs: "No logs found"
 };

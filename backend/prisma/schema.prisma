@@ -149,6 +149,9 @@ model Execution {
   
   variableContext Json?    
   
+  trigger         String?
+  error           String?  @db.Text
+
   startedAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   completedAt     DateTime?
