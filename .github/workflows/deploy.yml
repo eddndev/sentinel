@@ -73,6 +73,9 @@ jobs:
             echo "REDIS_URL=redis://redis:6379" >> .env
             echo "APP_IMAGE=ghcr.io/${{ github.repository }}/app:latest" >> .env
             echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/frontend:latest" >> .env
+            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+            echo "SUPER_ADMIN_EMAIL=${{ secrets.SUPER_ADMIN_EMAIL }}" >> .env
+            echo "SUPER_ADMIN_PASSWORD=${{ secrets.SUPER_ADMIN_PASSWORD }}" >> .env
             
             echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u eddndev --password-stdin
             
@@ -81,6 +84,9 @@ jobs:
             
             # Migrations - Using entrypoint override to verify schema
             docker compose run --rm --entrypoint "bunx prisma migrate deploy" app
+
+            # Seed - Ensure Super Admin exists
+            docker compose run --rm --entrypoint "bun run prisma/seed.ts" app
             
             # Restart app to ensure it picks up the schema (and recovers if it crashed)
             docker compose restart app

@@ -3,8 +3,12 @@ import { PrismaClient, Role } from "@prisma/client";
 const prisma = new PrismaClient();
 
 async function main() {
-    const email = "admin@sentinel.com";
-    const password = "password123";
+    const email = process.env.SUPER_ADMIN_EMAIL || "admin@sentinel.com";
+    const password = process.env.SUPER_ADMIN_PASSWORD || "password123";
+
+    if (!process.env.SUPER_ADMIN_EMAIL || !process.env.SUPER_ADMIN_PASSWORD) {
+        console.warn("⚠️  Using default credentials for Super Admin. Set SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD in .env for production.");
+    }
 
     const existingUser = await prisma.user.findUnique({
         where: { email }
