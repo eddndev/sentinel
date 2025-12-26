@@ -43,23 +43,38 @@ import { triggerController } from "./api/trigger.controller";
 import { executionController } from "./api/execution.controller";
 import { authController } from "./api/auth.controller";
 
-import { cors } from "@elysiajs/cors";
+
 
 const app = new Elysia()
-    .use(cors({
-        origin: (req: Request): boolean => {
-            const origin = req.headers.get('origin');
-            if (!origin) return false;
-            const allowedOrigins = [
-                "http://localhost:4321",
-                "https://app.angelviajero.com.mx"
-            ];
-            return allowedOrigins.includes(origin);
-        },
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-        credentials: true
-    }))
+    .onRequest(({ request, set }) => {
+        const origin = request.headers.get("origin");
+        const allowedOrigins = [
+            "http://localhost:4321",
+            "https://app.angelviajero.com.mx"
+        ];
+
+        if (origin && allowedOrigins.includes(origin)) {
+            set.headers["Access-Control-Allow-Origin"] = origin;
+            set.headers["Access-Control-Allow-Credentials"] = "true";
+            set.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
+            set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
+        }
+    })
+    .options("/*", ({ request, set }) => {
+        const origin = request.headers.get("origin");
+        const allowedOrigins = [
+            "http://localhost:4321",
+            "https://app.angelviajero.com.mx"
+        ];
+
+        if (origin && allowedOrigins.includes(origin)) {
+            set.headers["Access-Control-Allow-Origin"] = origin;
+            set.headers["Access-Control-Allow-Credentials"] = "true";
+            set.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
+            set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
+        }
+        return new Response(null, { status: 204 });
+    })
     .use(webhookController)
     .use(uploadController)
     .use(flowController)
