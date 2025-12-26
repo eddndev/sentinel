@@ -1,5 +1,5 @@
 import { prisma } from "./postgres.service";
-import { User, Role } from "@prisma/client";
+import { User } from "@prisma/client";
 
 export class AuthService {
     /**
@@ -21,9 +21,9 @@ export class AuthService {
     /**
      * Create a new user (Internal/Seed use mostly)
      */
-    static async createUser(email: string, passwordPlain: string, role: Role = Role.ADMIN, fullName?: string): Promise<User> {
+    static async createUser(email: string, passwordPlain: string, fullName?: string): Promise<User> {
         const passwordHash = await Bun.password.hash(passwordPlain, {
-            algorithm: "argon2id", // Best security
+            algorithm: "argon2id",
             memoryCost: 4096,
             timeCost: 3
         });
@@ -32,7 +32,6 @@ export class AuthService {
             data: {
                 email,
                 passwordHash,
-                role,
                 fullName,
                 isActive: true
             }
