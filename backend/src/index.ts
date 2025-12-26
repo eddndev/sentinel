@@ -47,7 +47,10 @@ import { cors } from "@elysiajs/cors";
 
 const app = new Elysia()
     .use(cors({
-        origin: true,
+        origin: [
+            "http://localhost:4321",
+            "https://app.angelviajero.com.mx"
+        ],
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
         allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
         credentials: true
