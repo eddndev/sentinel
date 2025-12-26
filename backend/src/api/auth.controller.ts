@@ -17,7 +17,9 @@ export const authController = new Elysia({ prefix: "/auth" })
             value: await jwt.sign({ id: user.id, role: user.role }),
             httpOnly: true,
             maxAge: 7 * 86400, // 7 Days
-            path: "/"
+            path: "/",
+            secure: true, // Required for SameSite=None
+            sameSite: "none" // Required due to different domains (api vs app)
         });
 
         return {

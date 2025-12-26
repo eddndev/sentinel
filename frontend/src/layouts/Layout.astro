@@ -27,13 +27,21 @@ const { title } = Astro.props;
 				this.checkSession();
 			},
 			async checkSession() {
+				console.log("[Auth] Checking session...");
 				try {
 					const response = await ApiClient.get("/auth/me");
+					console.log("[Auth] Session valid:", response);
 					this.user = response;
 					this.loading = false;
 				} catch (e) {
-					console.error("Auth check failed", e);
-					window.location.href = "/login";
+					console.error("[Auth] Session check failed:", e);
+					// Verify we aren't already on login page to avoid loop (though Layout shouldn't be used on login ideally)
+					if (window.location.pathname !== "/login") {
+						console.log("[Auth] Redirecting to login");
+						window.location.href = "/login";
+					} else {
+						this.loading = false; // Just show content if on login (though login page usually doesn't use this layout config)
+					}
 				}
 			},
 			async logout() {
