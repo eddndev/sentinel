@@ -2,7 +2,9 @@ const API_URL = import.meta.env.PUBLIC_API_URL || (import.meta.env.DEV ? "http:/
 
 export const ApiClient = {
     async get(endpoint: string) {
-        const res = await fetch(`${API_URL}${endpoint}`);
+        const res = await fetch(`${API_URL}${endpoint}`, {
+            credentials: "include"
+        });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
             throw new Error(data.error || `API Error: ${res.statusText}`);
@@ -15,6 +17,7 @@ export const ApiClient = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
+            credentials: "include"
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -28,6 +31,7 @@ export const ApiClient = {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
+            credentials: "include"
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -39,6 +43,7 @@ export const ApiClient = {
     async delete(endpoint: string) {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "DELETE",
+            credentials: "include"
         });
         if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
         return res.json();
