@@ -28,11 +28,5 @@ export const authMiddleware = (app: Elysia) =>
                 onBeforeHandle(({ user, error }) => {
                     if (!user) return error(401, "Unauthorized");
                 });
-            },
-            hasRole(roles: string[]) {
-                onBeforeHandle(({ user, error }) => {
-                    if (!user) return error(401, "Unauthorized");
-                    if (!roles.includes(user.role)) return error(403, "Forbidden");
-                });
             }
         }));

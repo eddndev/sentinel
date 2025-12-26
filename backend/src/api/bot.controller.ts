@@ -1,6 +1,6 @@
 import { Elysia, t } from "elysia";
 import { prisma } from "../services/postgres.service";
-import { Platform, Role } from "@prisma/client";
+import { Platform } from "@prisma/client";
 import { BaileysService } from "../services/baileys.service";
 import { authMiddleware } from "../middleware/auth.middleware";
 
@@ -8,23 +8,11 @@ export const botController = new Elysia({ prefix: "/bots" })
     .use(authMiddleware)
     .guard({ isSignIn: true })
     // List all bots
-    .get("/", async ({ user }) => {
-        if (user.role === Role.SUPER_ADMIN) {
-            return prisma.bot.findMany({ orderBy: { name: 'asc' } });
-        }
-
-        return prisma.bot.findMany({
-            where: { userId: user.id },
-            orderBy: { name: 'asc' }
-        });
+    .get("/", async () => {
+        return prisma.bot.findMany({ orderBy: { name: 'asc' } });
     })
     // Create bot
-    .post("/", async ({ body, set, user }) => {
-        if (user.role === Role.VIEWER) {
-            set.status = 403;
-            return "Viewers cannot create bots";
-        }
-
+    .post("/", async ({ body, set }) => {
         const { name, platform, identifier } = body as any;
 
         if (!name || !identifier) {
@@ -38,13 +26,12 @@ export const botController = new Elysia({ prefix: "/bots" })
                     name,
                     platform: (platform as Platform) || Platform.WHATSAPP,
                     identifier,
-                    credentials: {}, // Empty for now
-                    userId: user.id
+                    credentials: {}
                 }
             });
             return bot;
         } catch (e: any) {
-            if (e.code === 'P2002') { // Unique constraint
+            if (e.code === 'P2002') {
                 set.status = 409;
                 return "Bot Identifier already exists";
             }
@@ -57,7 +44,7 @@ export const botController = new Elysia({ prefix: "/bots" })
             platform: t.Optional(t.String())
         })
     })
-    // Baileys Management - specific routes BEFORE generic /:id
+    // Baileys Management
     .post("/:id/connect", async ({ params: { id }, set }) => {
         try {
             await BaileysService.startSession(id);
@@ -94,7 +81,7 @@ export const botController = new Elysia({ prefix: "/bots" })
             return `Failed to disconnect session: ${e.message}`;
         }
     })
-    // Generic /:id routes AFTER specific ones
+    // Generic /:id routes
     .get("/:id", async ({ params: { id }, set }) => {
         const bot = await prisma.bot.findUnique({
             where: { id }
@@ -105,37 +92,10 @@ export const botController = new Elysia({ prefix: "/bots" })
         }
         return bot;
     })
-    .put("/:id", async ({ params: { id }, body, set, user }) => {
+    .put("/:id", async ({ params: { id }, body, set }) => {
         const { name, identifier, platform, credentials } = body as any;
 
-        if (user.role === Role.VIEWER) {
-            set.status = 403;
-            return "Viewers cannot edit bots";
-        }
-
         try {
-            // Permission check can be done by query directly or separate fetch
-            // Let's do a direct update with where clause for simplicity/safety
-            const whereClause: any = { id };
-            if (user.role !== Role.SUPER_ADMIN) {
-                whereClause.userId = user.id;
-            }
-
-            // Using updateMany purely for safety permissions check implicitly? 
-            // No, updateMany returns count. We want returned object.
-            // So we must fetch first or assume.
-
-            const botToCheck = await prisma.bot.findUnique({ where: { id } });
-            if (!botToCheck) {
-                set.status = 404;
-                return { error: "Bot not found" };
-            }
-
-            if (user.role !== Role.SUPER_ADMIN && botToCheck.userId !== user.id) {
-                set.status = 403;
-                return "You do not own this bot";
-            }
-
             const bot = await prisma.bot.update({
                 where: { id },
                 data: {
@@ -151,24 +111,8 @@ export const botController = new Elysia({ prefix: "/bots" })
             return "Failed to update bot";
         }
     })
-    .delete("/:id", async ({ params: { id }, set, user }) => {
+    .delete("/:id", async ({ params: { id }, set }) => {
         try {
-            const bot = await prisma.bot.findUnique({ where: { id } });
-            if (!bot) {
-                set.status = 404;
-                return "Bot not found";
-            }
-
-            if (user.role !== Role.SUPER_ADMIN && bot.userId !== user.id) {
-                set.status = 403;
-                return "You do not have permission to delete this bot";
-            }
-
-            if (user.role === Role.VIEWER) {
-                set.status = 403;
-                return "Viewers cannot delete bots";
-            }
-
             await prisma.bot.delete({
                 where: { id }
             });

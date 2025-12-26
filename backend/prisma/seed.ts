@@ -1,4 +1,4 @@
-import { PrismaClient, Role } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,7 +7,7 @@ async function main() {
     const password = process.env.SUPER_ADMIN_PASSWORD || "password123";
 
     if (!process.env.SUPER_ADMIN_EMAIL || !process.env.SUPER_ADMIN_PASSWORD) {
-        console.warn("⚠️  Using default credentials for Super Admin. Set SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD in .env for production.");
+        console.warn("⚠️  Using default credentials for Admin. Set SUPER_ADMIN_EMAIL and SUPER_ADMIN_PASSWORD in .env for production.");
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -29,13 +29,12 @@ async function main() {
         data: {
             email,
             passwordHash,
-            role: Role.SUPER_ADMIN,
-            fullName: "Super Admin",
+            fullName: "Admin",
             isActive: true
         }
     });
 
-    console.log(`Created Super Admin: ${user.email} / ${password}`);
+    console.log(`Created Admin: ${user.email} / ${password}`);
 }
 
 main()
