@@ -46,35 +46,6 @@ import { authController } from "./api/auth.controller";
 
 
 const app = new Elysia()
-    .onRequest(({ request, set }) => {
-        const origin = request.headers.get("origin");
-        const allowedOrigins = [
-            "http://localhost:4321",
-            "https://app.angelviajero.com.mx"
-        ];
-
-        if (origin && allowedOrigins.includes(origin)) {
-            set.headers["Access-Control-Allow-Origin"] = origin;
-            set.headers["Access-Control-Allow-Credentials"] = "true";
-            set.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
-            set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
-        }
-    })
-    .options("/*", ({ request, set }) => {
-        const origin = request.headers.get("origin");
-        const allowedOrigins = [
-            "http://localhost:4321",
-            "https://app.angelviajero.com.mx"
-        ];
-
-        if (origin && allowedOrigins.includes(origin)) {
-            set.headers["Access-Control-Allow-Origin"] = origin;
-            set.headers["Access-Control-Allow-Credentials"] = "true";
-            set.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS, PATCH";
-            set.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, Accept";
-        }
-        return new Response(null, { status: 204 });
-    })
     .use(webhookController)
     .use(uploadController)
     .use(flowController)
