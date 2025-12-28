@@ -117,8 +117,10 @@ export const botController = new Elysia({ prefix: "/bots" })
                 where: { id }
             });
             return { success: true };
-        } catch (e) {
+        } catch (e: any) {
+            console.error("[DELETE /bots/:id] Error:", e?.message || e);
+            console.error("[DELETE /bots/:id] Full error:", JSON.stringify(e, null, 2));
             set.status = 500;
-            return "Failed to delete bot";
+            return { error: "Failed to delete bot", details: e?.message };
         }
     });
