@@ -177,7 +177,7 @@ model Message {
   id            String   @id @default(uuid())
   externalId    String   @unique 
   sessionId     String
-  session       Session  @relation(fields: [sessionId], references: [id])
+  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   
   sender        String   
   content       String?  @db.Text
