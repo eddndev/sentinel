@@ -152,9 +152,9 @@ model Step {
 model Execution {
   id              String   @id @default(uuid())
   sessionId       String
-  session         Session  @relation(fields: [sessionId], references: [id])
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   flowId          String
-  flow            Flow     @relation(fields: [flowId], references: [id])
+  flow            Flow     @relation(fields: [flowId], references: [id], onDelete: Cascade)
   
   platformUserId  String   
   status          String   @default("RUNNING") 
