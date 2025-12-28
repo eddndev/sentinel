@@ -597,6 +597,86 @@ import BotConnection from "../../components/BotConnection.astro";
                 </div>
             </div>
         </div>
+
+        <!-- Edit Bot Modal -->
+        <div
+            x-show="showEditModal"
+            x-cloak
+            class="fixed inset-0 z-50 flex items-center justify-center"
+            style="display: none;"
+        >
+            <!-- Backdrop -->
+            <div
+                class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                @click="showEditModal = false"
+            >
+            </div>
+
+            <!-- Modal -->
+            <div
+                class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-md"
+            >
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+                <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+                <h2
+                    class="text-xl font-bold uppercase tracking-tight mb-6"
+                    x-text="$t('edit_bot') || 'Edit Bot'"
+                >
+                    Edit Bot
+                </h2>
+
+                <form @submit.prevent="submitEditBot()" class="space-y-4">
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            x-text="$t('bot_name') || 'Name'"></label>
+                        <input
+                            type="text"
+                            x-model="editForm.name"
+                            required
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+                            placeholder="My WhatsApp Bot"
+                        />
+                    </div>
+
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            x-text="$t('bot_identifier') || 'Identifier'"
+                        ></label>
+                        <input
+                            type="text"
+                            x-model="editForm.identifier"
+                            required
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+                            placeholder="+1234567890"
+                        />
+                    </div>
+
+                    <div class="flex gap-4 pt-4">
+                        <button
+                            type="button"
+                            @click="showEditModal = false"
+                            class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5"
+                            x-text="$t('cancel') || 'Cancel'"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            :disabled="savingEdit"
+                            class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50"
+                            x-text="savingEdit ? ($t('loading') || 'Saving...') : ($t('save') || 'Save')"
+                        >
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </Layout>
 
@@ -661,6 +741,14 @@ import BotConnection from "../../components/BotConnection.astro";
             importData: {
                 sourceBotId: "",
                 sourceFlowId: "",
+            },
+
+            // Edit Bot State
+            showEditModal: false,
+            savingEdit: false,
+            editForm: {
+                name: "",
+                identifier: "",
             },
 
             // Logs State
@@ -739,8 +827,29 @@ import BotConnection from "../../components/BotConnection.astro";
             },
 
             editBot() {
-                // TODO: Implement bot edit modal
-                alert("Edit functionality coming soon");
+                this.editForm.name = this.bot.name;
+                this.editForm.identifier = this.bot.identifier;
+                this.showEditModal = true;
+            },
+
+            async submitEditBot() {
+                if (!this.editForm.name || !this.editForm.identifier) return;
+
+                this.savingEdit = true;
+                try {
+                    const updated = await ApiClient.put(`/bots/${this.botId}`, {
+                        name: this.editForm.name,
+                        identifier: this.editForm.identifier,
+                        platform: this.bot.platform,
+                    });
+                    this.bot = updated;
+                    this.showEditModal = false;
+                } catch (e: unknown) {
+                    const error = e as Error;
+                    alert(error.message || "Failed to update bot");
+                } finally {
+                    this.savingEdit = false;
+                }
             },
 
             async deleteBot() {

@@ -102,7 +102,7 @@ model Trigger {
   isActive    Boolean   @default(true)
   
   flowId      String
-  flow        Flow      @relation(fields: [flowId], references: [id])
+  flow        Flow      @relation(fields: [flowId], references: [id], onDelete: Cascade)
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
