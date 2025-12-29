@@ -159,28 +159,69 @@ export class BaileysService {
 
             if (!session) {
                 console.log(`[Baileys] New Session for user ${from} on bot ${bot.name}`);
-                session = await prisma.session.create({
-                    data: {
-                        botId: bot.id,
-                        platform: Platform.WHATSAPP,
-                        identifier: from,
-                        name: msg.pushName || `User ${from.slice(0, 6)}`,
-                        status: SessionStatus.CONNECTED
+                try {
+                    session = await prisma.session.create({
+                        data: {
+                            botId: bot.id,
+                            platform: Platform.WHATSAPP,
+                            identifier: from,
+                            name: msg.pushName || `User ${from.slice(0, 6)}`,
+                            status: SessionStatus.CONNECTED
+                        }
+                    });
+                } catch (e: any) {
+                    // Handle Race Condition: Another request created the session ms ago
+                    if (e.code === 'P2002') {
+                        console.log(`[Baileys] Session race condition detected for ${from}, fetching existing...`);
+                        const existing = await prisma.session.findUnique({
+                            where: {
+                                botId_identifier: { botId: bot.id, identifier: from }
+                            }
+                        });
+                        if (!existing) throw e; // Should not happen if P2002 occurred
+                        session = existing;
+                    } else {
+                        throw e;
                     }
-                });
+                }
             }
 
             // 3. Persist Message
-            const message = await prisma.message.create({
-                data: {
-                    externalId: msg.key.id || `msg_${Date.now()}`,
-                    sessionId: session.id,
-                    sender: from,
-                    content,
-                    type: msgType,
-                    isProcessed: false
+            let message;
+            try {
+                // Check if message already exists (Idempotency)
+                const messageExternalId = msg.key.id || `msg_${Date.now()}`;
+                const existingMessage = await prisma.message.findUnique({
+                    where: { externalId: messageExternalId }
+                });
+
+                if (existingMessage) {
+                    console.log(`[Baileys] Message ${messageExternalId} already exists, skipping creation.`);
+                    message = existingMessage;
+                } else {
+                    message = await prisma.message.create({
+                        data: {
+                            externalId: messageExternalId,
+                            sessionId: session.id,
+                            sender: from,
+                            content,
+                            type: msgType,
+                            isProcessed: false
+                        }
+                    });
                 }
-            });
+            } catch (e: any) {
+                if (e.code === 'P2002') {
+                    console.warn(`[Baileys] Message creation collision for ${msg.key.id}, fetching existing...`);
+                    message = await prisma.message.findUnique({
+                        where: { externalId: msg.key.id! }
+                    });
+                } else {
+                    throw e;
+                }
+            }
+
+            if (!message) return; // Should not happen unless catostrophic DB failure
 
             // 4. Process with Flow Engine
             flowEngine.processIncomingMessage(session.id, message).catch(err => {
