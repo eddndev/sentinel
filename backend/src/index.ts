@@ -19,6 +19,17 @@ redis.on("connect", () => console.log("Redis Connected"));
 import { startSentinelWorker } from "./workers/message.worker";
 const worker = startSentinelWorker();
 
+// --- Global Error Handlers (Prevent Crash) ---
+process.on('uncaughtException', (err) => {
+    console.error('!!!! Uncaught Exception !!!!', err);
+    // Do NOT exit the process, just log it.
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('!!!! Unhandled Rejection !!!!', reason);
+    // Do NOT exit.
+});
+
 // --- Baileys Init ---
 import { prisma } from "./services/postgres.service";
 import { BaileysService } from "./services/baileys.service";

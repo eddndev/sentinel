@@ -38,6 +38,9 @@ COPY --from=install /temp/prod/prisma prisma
 # pre-create persistent directories and set permissions
 RUN mkdir -p auth_info_baileys uploads && chown -R bun:bun auth_info_baileys uploads
 
+# Install FFmpeg for Baileys media processing
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
 # run the app
 USER bun
 EXPOSE 8080/tcp
