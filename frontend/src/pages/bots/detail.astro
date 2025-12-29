@@ -304,11 +304,16 @@ import BotConnection from "../../components/BotConnection.astro";
                         >
                         <select
                             x-model="filters.status"
-                            @change="loadLogs()"
+                            @change="logsPagination.offset = 0; loadLogs()"
                             class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 min-w-[120px] focus:border-brand-purple focus:outline-none"
                         >
                             <option value="ALL" x-text="$t('status_all')"
                                 >All</option
+                            >
+                            <option
+                                value="RUNNING"
+                                x-text="$t('status_running') || 'Running'"
+                                >Running</option
                             >
                             <option
                                 value="COMPLETED"
@@ -329,7 +334,7 @@ import BotConnection from "../../components/BotConnection.astro";
                         <input
                             type="text"
                             x-model="filters.search"
-                            @input.debounce="loadLogs()"
+                            @input.debounce="logsPagination.offset = 0; loadLogs()"
                             class="w-full bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none placeholder-gray-700"
                             :placeholder="$t('filter_user') + ' / Trigger...'"
                         />
@@ -343,7 +348,7 @@ import BotConnection from "../../components/BotConnection.astro";
                         <input
                             type="date"
                             x-model="filters.startDate"
-                            @change="loadLogs()"
+                            @change="logsPagination.offset = 0; loadLogs()"
                             class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
                         />
                     </div>
@@ -356,7 +361,7 @@ import BotConnection from "../../components/BotConnection.astro";
                         <input
                             type="date"
                             x-model="filters.endDate"
-                            @change="loadLogs()"
+                            @change="logsPagination.offset = 0; loadLogs()"
                             class="bg-[#0f172a] border border-white/10 text-white text-xs p-2 focus:border-brand-purple focus:outline-none"
                         />
                     </div>
@@ -475,6 +480,52 @@ import BotConnection from "../../components/BotConnection.astro";
                             </template>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Pagination Controls -->
+                <div
+                    class="flex items-center justify-between mt-6 pt-4 border-t border-white/10"
+                >
+                    <div class="text-xs font-mono text-gray-500">
+                        <span x-text="$t('showing') || 'Showing'"></span>
+                        <span
+                            x-text="Math.min(logsPagination.offset + 1, logsPagination.total)"
+                        ></span>
+                        -
+                        <span
+                            x-text="Math.min(logsPagination.offset + logsPagination.limit, logsPagination.total)"
+                        ></span>
+                        <span x-text="$t('of') || 'of'"></span>
+                        <span x-text="logsPagination.total" class="text-white"
+                        ></span>
+                        <span x-text="$t('records') || 'records'"></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button
+                            @click="prevPage()"
+                            :disabled="logsPagination.offset === 0"
+                            class="px-3 py-1 border border-white/10 text-gray-400 text-xs font-mono uppercase hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                            ← <span x-text="$t('prev') || 'Prev'"></span>
+                        </button>
+                        <span class="text-xs font-mono text-gray-500">
+                            <span x-text="$t('page') || 'Page'"></span>
+                            <span
+                                x-text="Math.floor(logsPagination.offset / logsPagination.limit) + 1"
+                                class="text-white"></span>
+                            /
+                            <span
+                                x-text="Math.ceil(logsPagination.total / logsPagination.limit) || 1"
+                            ></span>
+                        </span>
+                        <button
+                            @click="nextPage()"
+                            :disabled="logsPagination.offset + logsPagination.limit >= logsPagination.total"
+                            class="px-3 py-1 border border-white/10 text-gray-400 text-xs font-mono uppercase hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        >
+                            <span x-text="$t('next') || 'Next'"></span> →
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -901,7 +952,8 @@ import BotConnection from "../../components/BotConnection.astro";
                 try {
                     const params = new URLSearchParams();
                     params.append("botId", this.botId!);
-                    params.append("limit", "50");
+                    params.append("limit", String(this.logsPagination.limit));
+                    params.append("offset", String(this.logsPagination.offset));
                     if (this.filters.status !== "ALL")
                         params.append("status", this.filters.status);
                     if (this.filters.search)
@@ -915,11 +967,34 @@ import BotConnection from "../../components/BotConnection.astro";
                         `/executions?${params.toString()}`,
                     );
                     this.logs = res.data;
-                    this.logsPagination = res.pagination;
+                    this.logsPagination = {
+                        ...this.logsPagination,
+                        total: res.pagination.total,
+                    };
                 } catch (e) {
                     console.error("Failed to load logs", e);
                 } finally {
                     this.loadingLogs = false;
+                }
+            },
+
+            prevPage() {
+                if (this.logsPagination.offset > 0) {
+                    this.logsPagination.offset = Math.max(
+                        0,
+                        this.logsPagination.offset - this.logsPagination.limit,
+                    );
+                    this.loadLogs();
+                }
+            },
+
+            nextPage() {
+                if (
+                    this.logsPagination.offset + this.logsPagination.limit <
+                    this.logsPagination.total
+                ) {
+                    this.logsPagination.offset += this.logsPagination.limit;
+                    this.loadLogs();
                 }
             },
 
