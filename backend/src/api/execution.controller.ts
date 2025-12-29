@@ -26,16 +26,10 @@ export const executionController = new Elysia({ prefix: "/executions" })
             return { error: "botId is required" };
         }
 
+        // Filter executions via the flow relationship (Execution -> Flow -> Bot)
         const where: any = {
-            botId: botId // Indirectly filter via Flow or ensure Session belongs to Bot? 
-            // Execution has flowId, Flow has botId. 
-            // Also Execution has sessionId, Session has botId.
-            // Let's filter via flow->botId for now as it's cleaner.
+            flow: { botId }
         };
-
-        // Actually, schema says Execution -> Flow. Flow -> Bot.
-        // So where: { flow: { botId } }
-        where.flow = { botId };
 
         if (status && status !== 'ALL') {
             where.status = status;
