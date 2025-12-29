@@ -222,13 +222,28 @@ export class BaileysService {
         console.log(`[Baileys] Session stopped for bot ${botId}`);
     }
 
-    static async sendMessage(botId: string, to: string, content: any) {
+    static async sendMessage(botId: string, to: string, content: any): Promise<boolean> {
         const sock = sessions.get(botId);
         if (!sock) {
             console.warn(`[Baileys] sendMessage failed: Bot ${botId} not connected`);
-            // Attempt auto-reconnect?
-            return;
+            return false;
         }
-        await sock.sendMessage(to, content);
+
+        try {
+            await sock.sendMessage(to, content);
+            return true;
+        } catch (error: any) {
+            // Log the error with details but don't crash
+            const errorCode = error?.code || 'UNKNOWN';
+            const errorMsg = error?.message || String(error);
+            console.error(`[Baileys] sendMessage failed for Bot ${botId} to ${to}:`, {
+                code: errorCode,
+                message: errorMsg,
+                contentType: content?.text ? 'TEXT' : content?.image ? 'IMAGE' : content?.audio ? 'AUDIO' : 'OTHER'
+            });
+
+            // Rethrow so caller can handle/log, but with more context
+            throw new Error(`Baileys send failed (${errorCode}): ${errorMsg}`);
+        }
     }
 }
