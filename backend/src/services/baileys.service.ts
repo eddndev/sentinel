@@ -135,6 +135,11 @@ export class BaileysService {
         // CRITICAL: Normalize JID (convert @lid to @s.whatsapp.net) to identify user consistently
         const from = jidNormalizedUser(rawFrom);
 
+        // DEBUG: Inspect detailed keys to find phone number if 'from' is LID
+        if (from.includes('@lid')) {
+            console.log(`[Baileys] LID Detected. Msg Key:`, JSON.stringify(msg.key));
+        }
+
         // Extract content
         const content = msg.message.conversation ||
             msg.message.extendedTextMessage?.text ||
