@@ -441,9 +441,18 @@ import BotConnection from "../../components/BotConnection.astro";
                                     <td
                                         class="p-3 text-gray-400"
                                         x-text="formatDate(log.startedAt)"></td>
-                                    <td
-                                        class="p-3 text-white"
-                                        x-text="log.platformUserId"></td>
+                                    <td class="p-3">
+                                        <div
+                                            class="text-white font-medium"
+                                            x-text="log.session?.name || 'Unknown'"
+                                        >
+                                        </div>
+                                        <div
+                                            class="text-[10px] text-gray-500"
+                                            x-text="log.platformUserId"
+                                        >
+                                        </div>
+                                    </td>
                                     <td
                                         class="p-3 text-brand-purple"
                                         x-text="log.flow?.name || '-'"></td>

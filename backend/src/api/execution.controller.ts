@@ -63,6 +63,9 @@ export const executionController = new Elysia({ prefix: "/executions" })
                     include: {
                         flow: {
                             select: { name: true }
+                        },
+                        session: {
+                            select: { name: true }
                         }
                     }
                 })

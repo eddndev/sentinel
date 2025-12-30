@@ -5,7 +5,8 @@ import makeWASocket, {
     makeCacheableSignalKeyStore,
     fetchLatestBaileysVersion,
     type WASocket,
-    type WAMessage
+    type WAMessage,
+    jidNormalizedUser
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import * as fs from 'fs';
@@ -128,8 +129,11 @@ export class BaileysService {
     }
 
     private static async handleIncomingMessage(botId: string, msg: WAMessage & { message: any }) { // Type intersection specific to local context
-        const from = msg.key.remoteJid;
-        if (!from || msg.key.fromMe) return;
+        const rawFrom = msg.key.remoteJid;
+        if (!rawFrom || msg.key.fromMe) return;
+
+        // CRITICAL: Normalize JID (convert @lid to @s.whatsapp.net) to identify user consistently
+        const from = jidNormalizedUser(rawFrom);
 
         // Extract content
         const content = msg.message.conversation ||
@@ -140,7 +144,7 @@ export class BaileysService {
         const msgType = msg.message.imageMessage ? 'IMAGE' :
             msg.message.audioMessage ? 'AUDIO' : 'TEXT';
 
-        console.log(`[Baileys] Received ${msgType} from ${from} on Bot ${botId}: ${content.substring(0, 50)}...`);
+        console.log(`[Baileys] Received ${msgType} from ${from} (${msg.pushName}) [MsgID: ${msg.key.id}] on Bot ${botId}: ${content.substring(0, 50)}...`);
 
         try {
             // 1. Resolve Bot
