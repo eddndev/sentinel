@@ -33,7 +33,7 @@ export class BaileysService {
             return sessions.get(botId);
         }
 
-        console.log(`[Baileys] Starting session for Bot ${botId}`);
+        console.log(`[${new Date().toISOString()}] [Baileys] Starting session for Bot ${botId}`);
 
         const sessionDir = path.join(AUTH_DIR, botId);
         if (!fs.existsSync(sessionDir)) {
@@ -43,7 +43,7 @@ export class BaileysService {
         const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
         const { version, isLatest } = await fetchLatestBaileysVersion();
 
-        console.log(`[Baileys] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
+        console.log(`[${new Date().toISOString()}] [Baileys] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
         try {
             // @ts-ignore
@@ -68,12 +68,12 @@ export class BaileysService {
                 const { connection, lastDisconnect, qr } = update;
 
                 if (qr) {
-                    console.log(`[Baileys] QR Received for Bot ${botId}`);
+                    console.log(`[${new Date().toISOString()}] [Baileys] QR Received for Bot ${botId}`);
                     try {
                         const url = await QRCode.toDataURL(qr);
                         qrCodes.set(botId, url);
                     } catch (err) {
-                        console.error("QR Generation Error", err);
+                        console.error(`[${new Date().toISOString()}] QR Generation Error`, err);
                     }
                 }
 
@@ -119,9 +119,9 @@ export class BaileysService {
             return sock;
 
         } catch (error: any) {
-            console.error(`[Baileys] Failed to start session for bot ${botId}:`, error);
+            console.error(`[${new Date().toISOString()}] [Baileys] Failed to start session for bot ${botId}:`, error);
             if (error.message?.includes('QR refs attempts ended')) {
-                console.log(`[Baileys] QR timeout for bot ${botId}. Removing session to allow fresh retry.`);
+                console.log(`[${new Date().toISOString()}] [Baileys] QR timeout for bot ${botId}. Removing session to allow fresh retry.`);
                 this.stopSession(botId);
             }
             return null;
@@ -149,7 +149,7 @@ export class BaileysService {
         const msgType = msg.message.imageMessage ? 'IMAGE' :
             msg.message.audioMessage ? 'AUDIO' : 'TEXT';
 
-        console.log(`[Baileys] Received ${msgType} from ${from} (${msg.pushName}) [MsgID: ${msg.key.id}] on Bot ${botId}: ${content.substring(0, 50)}...`);
+        console.log(`[${new Date().toISOString()}] [Baileys] Received ${msgType} from ${from} (${msg.pushName}) [MsgID: ${msg.key.id}] on Bot ${botId}: ${content.substring(0, 50)}...`);
 
         try {
             // 1. Resolve Bot
@@ -234,11 +234,11 @@ export class BaileysService {
 
             // 4. Process with Flow Engine
             flowEngine.processIncomingMessage(session.id, message).catch(err => {
-                console.error("[Baileys] Flow Engine Error:", err);
+                console.error(`[${new Date().toISOString()}] [Baileys] Flow Engine Error:`, err);
             });
 
         } catch (e) {
-            console.error("[Baileys] Error processing message:", e);
+            console.error(`[${new Date().toISOString()}] [Baileys] Error processing message:`, e);
         }
     }
 
@@ -256,7 +256,7 @@ export class BaileysService {
             try {
                 await sock.logout();
             } catch (e) {
-                console.log(`[Baileys] Error during logout for bot ${botId}:`, e);
+                console.log(`[${new Date().toISOString()}] [Baileys] Error during logout for bot ${botId}:`, e);
             }
             sessions.delete(botId);
         }
@@ -266,16 +266,16 @@ export class BaileysService {
         const sessionDir = path.join(AUTH_DIR, botId);
         if (fs.existsSync(sessionDir)) {
             fs.rmSync(sessionDir, { recursive: true, force: true });
-            console.log(`[Baileys] Cleared auth data for bot ${botId}`);
+            console.log(`[${new Date().toISOString()}] [Baileys] Cleared auth data for bot ${botId}`);
         }
 
-        console.log(`[Baileys] Session stopped for bot ${botId}`);
+        console.log(`[${new Date().toISOString()}] [Baileys] Session stopped for bot ${botId}`);
     }
 
     static async sendMessage(botId: string, to: string, content: any): Promise<boolean> {
         const sock = sessions.get(botId);
         if (!sock) {
-            console.warn(`[Baileys] sendMessage failed: Bot ${botId} not connected`);
+            console.warn(`[${new Date().toISOString()}] [Baileys] sendMessage failed: Bot ${botId} not connected`);
             return false;
         }
 
@@ -286,7 +286,7 @@ export class BaileysService {
             // Log the error with details but don't crash
             const errorCode = error?.code || 'UNKNOWN';
             const errorMsg = error?.message || String(error);
-            console.error(`[Baileys] sendMessage failed for Bot ${botId} to ${to}:`, {
+            console.error(`[${new Date().toISOString()}] [Baileys] sendMessage failed for Bot ${botId} to ${to}:`, {
                 code: errorCode,
                 message: errorMsg,
                 contentType: content?.text ? 'TEXT' : content?.image ? 'IMAGE' : content?.audio ? 'AUDIO' : 'OTHER'
