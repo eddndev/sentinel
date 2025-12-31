@@ -1,0 +1,5 @@
+-- CreateEnum
+CREATE TYPE "ClientStatus" AS ENUM ('LINEA_DE_CAPTURA_CREADA', 'CITA_AGENDADA', 'PAGO_PENDIENTE', 'PAGADO');
+
+-- AlterTable
+ALTER TABLE "Client" ADD COLUMN     "status" "ClientStatus" NOT NULL DEFAULT 'PAGO_PENDIENTE';

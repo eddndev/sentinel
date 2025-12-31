@@ -78,9 +78,20 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                         >← Volver al Bot</a
                     >
                     <h1
-                        class="text-3xl font-bold uppercase tracking-tight"
-                        x-text="client.name"
+                        class="text-3xl font-bold uppercase tracking-tight flex items-center gap-3"
                     >
+                        <span x-text="client.name"></span>
+                        <span
+                            class="px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wide border border-white/10"
+                            :class="{
+                                'bg-yellow-500/20 text-yellow-500': client.status === 'LINEA_DE_CAPTURA_CREADA',
+                                'bg-blue-500/20 text-blue-500': client.status === 'CITA_AGENDADA',
+                                'bg-red-500/20 text-red-500': client.status === 'PAGO_PENDIENTE',
+                                'bg-green-500/20 text-green-500': client.status === 'PAGADO'
+                            }"
+                            x-text="client.status ? client.status.replace(/_/g, ' ') : 'PENDIENTE'"
+                        >
+                        </span>
                     </h1>
                     <p
                         class="text-sm font-mono text-brand-purple mt-1"
@@ -272,6 +283,28 @@ import ClientModal from "../../components/clients/ClientModal.astro";
                                         class="w-full bg-black/40 border-white/10 text-white p-2 rounded"
                                     />
                                 </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label
+                                    class="block text-xs uppercase text-gray-500 mb-1"
+                                    >Estatus</label
+                                >
+                                <select
+                                    x-model="client.status"
+                                    class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                                >
+                                    <option value="LINEA_DE_CAPTURA_CREADA"
+                                        >Línea de Captura Creada</option
+                                    >
+                                    <option value="CITA_AGENDADA"
+                                        >Cita Agendada</option
+                                    >
+                                    <option value="PAGO_PENDIENTE"
+                                        >Pago Pendiente</option
+                                    >
+                                    <option value="PAGADO">Pagado</option>
+                                </select>
                             </div>
                             <!-- 'Llave' fields are usually immutable ID but name/email editing permitted. To keep full edits use ClientModal approach but for fix speed: -->
                             <div class="mb-4">

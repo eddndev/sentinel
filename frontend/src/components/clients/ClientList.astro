@@ -46,6 +46,7 @@ const { botId } = Astro.props;
                     class="text-xs uppercase text-gray-400 border-b border-white/10"
                 >
                     <th class="p-3">Nombre</th>
+                    <th class="p-3">Status</th>
                     <th class="p-3">Email</th>
                     <th class="p-3">Teléfono</th>
                     <th class="p-3">Fecha Cita</th>
@@ -58,6 +59,19 @@ const { botId } = Astro.props;
                         <td
                             class="p-3 font-medium text-white"
                             x-text="client.name"></td>
+                        <td class="p-3">
+                            <span
+                                class="px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wide"
+                                :class="{
+                                    'bg-yellow-500/20 text-yellow-500': client.status === 'LINEA_DE_CAPTURA_CREADA',
+                                    'bg-blue-500/20 text-blue-500': client.status === 'CITA_AGENDADA',
+                                    'bg-red-500/20 text-red-500': client.status === 'PAGO_PENDIENTE',
+                                    'bg-green-500/20 text-green-500': client.status === 'PAGADO'
+                                }"
+                                x-text="client.status ? client.status.replace(/_/g, ' ') : 'PENDIENTE'"
+                            >
+                            </span>
+                        </td>
                         <td class="p-3 text-gray-400" x-text="client.email"
                         ></td>
                         <td
@@ -80,3 +94,8 @@ const { botId } = Astro.props;
         </table>
     </div>
 </div>
+
+<script>
+    import { ApiClient } from "../../lib/api";
+    window.ApiClient = ApiClient;
+</script>

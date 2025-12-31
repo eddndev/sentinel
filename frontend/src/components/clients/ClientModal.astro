@@ -17,6 +17,7 @@ const isEdit = !!client;
         email: '${client?.email || ""}',
         phoneNumber: '${client?.phoneNumber || ""}',
         contactNumber: '${client?.contactNumber || ""}',
+        status: '${client?.status || "PAGO_PENDIENTE"}',
         plainTextPassword: '', // Always empty on load for security? Or should we fill? Creating = empty. Editing = empty (fill only if changing).
         appointmentDate: '${client?.appointmentDate || ""}',
         captureLine: '${client?.captureLine || ""}',

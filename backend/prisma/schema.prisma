@@ -220,6 +220,8 @@ model Client {
   
   botId               String
   bot                 Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  status              ClientStatus @default(PAGO_PENDIENTE)
   
   // Sensitive Data
   encryptedPassword   String
@@ -230,4 +232,11 @@ model Client {
   @@index([email])
   @@index([phoneNumber])
   @@index([botId])
+}
+
+enum ClientStatus {
+  LINEA_DE_CAPTURA_CREADA
+  CITA_AGENDADA
+  PAGO_PENDIENTE
+  PAGADO
 }
