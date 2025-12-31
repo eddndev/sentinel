@@ -61,6 +61,7 @@ model Bot {
   flows       Flow[]
   sessions    Session[]
   triggers    Trigger[] // Global triggers for this bot
+  clients     Client[]
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -198,4 +199,35 @@ model CommandLog {
   status    String
   result    String?  @db.Text
   createdAt DateTime @default(now())
+}
+
+model Client {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  phoneNumber         String
+  name                String
+  
+  appointmentDate     DateTime?
+  captureLine         String?
+  
+  // PDF Paths
+  captureLinePdfPath   String?
+  accreditationPdfPath String?
+  appointmentPdfPath   String?
+  
+  // Extra contact info (non-unique as requested)
+  contactNumber       String?
+  
+  botId               String
+  bot                 Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  
+  // Sensitive Data
+  encryptedPassword   String
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([botId])
 }

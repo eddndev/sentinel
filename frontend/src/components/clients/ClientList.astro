@@ -1,0 +1,68 @@
+---
+interface Props {
+  botId: string;
+}
+
+const { botId } = Astro.props;
+---
+
+<div x-data={`{
+    clients: [],
+    loading: true,
+    botId: '${botId}',
+    
+    async fetchClients() {
+        this.loading = true;
+        try {
+            const data = await ApiClient.get('/clients?botId=' + this.botId);
+            this.clients = data;
+        } catch (e) {
+            console.error(e);
+            alert('Error fetching clients');
+        } finally {
+            this.loading = false;
+        }
+    },
+    
+    init() {
+        this.fetchClients();
+        console.log('ClientList init for bot', this.botId);
+    }
+}`}>
+
+    <!-- Validation/Empty State -->
+    <template x-if="!loading && clients.length === 0">
+        <div class="text-center py-10 text-gray-500">
+            <p>No hay clientes registrados en este bot.</p>
+        </div>
+    </template>
+
+    <!-- Table -->
+    <div class="overflow-x-auto" x-show="clients.length > 0">
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="text-xs uppercase text-gray-400 border-b border-white/10">
+                    <th class="p-3">Nombre</th>
+                    <th class="p-3">Email</th>
+                    <th class="p-3">Teléfono</th>
+                    <th class="p-3">Fecha Cita</th>
+                    <th class="p-3 text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5">
+                <template x-for="client in clients" :key="client.id">
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="p-3 font-medium text-white" x-text="client.name"></td>
+                        <td class="p-3 text-gray-400" x-text="client.email"></td>
+                        <td class="p-3 text-gray-400" x-text="client.phoneNumber"></td>
+                        <td class="p-3 text-gray-400" x-text="client.appointmentDate ? new Date(client.appointmentDate).toLocaleDateString() : '-'"></td>
+                        <td class="p-3 text-right">
+                            <a :href="'/clients/' + client.id" class="text-blue-400 hover:text-blue-300 text-sm mr-2">Ver Detalle</a>
+                        </td>
+                    </tr>
+                </template>
+            </tbody>
+        </table>
+    </div>
+
+</div>

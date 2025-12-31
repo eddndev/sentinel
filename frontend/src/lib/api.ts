@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.PUBLIC_API_URL || (import.meta.env.DEV ? "http://localhost:8080" : "https://api-sentinel.angelviajero.com.mx");
+const API_URL = import.meta.env.PUBLIC_API_URL || (import.meta.env.DEV ? "http://localhost:8081" : "https://api-sentinel.angelviajero.com.mx");
 
 export const ApiClient = {
     async get(endpoint: string) {
@@ -46,6 +46,23 @@ export const ApiClient = {
             credentials: "include"
         });
         if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
+        return res.json();
+    },
+
+    async uploadFile(file: File) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch(`${API_URL}/upload`, {
+            method: "POST",
+            body: formData,
+            credentials: "include"
+        });
+
+        if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            throw new Error(data.message || `Upload Error: ${res.statusText}`);
+        }
         return res.json();
     }
 };

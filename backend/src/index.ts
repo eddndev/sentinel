@@ -53,8 +53,7 @@ import { botController } from "./api/bot.controller";
 import { triggerController } from "./api/trigger.controller";
 import { executionController } from "./api/execution.controller";
 import { authController } from "./api/auth.controller";
-
-
+import { clientRoutes } from "./api/client.routes";
 
 const app = new Elysia()
     .use(webhookController)
@@ -64,6 +63,7 @@ const app = new Elysia()
     .use(triggerController)
     .use(executionController)
     .use(authController)
+    .use(clientRoutes)
     .get("/", () => "Sentinel Orchestrator Active")
     .get("/health", () => ({ status: "ok", timestamp: new Date().toISOString() }))
     .get("/info", () => ({

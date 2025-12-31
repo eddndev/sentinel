@@ -1,6 +1,10 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import BotConnection from "../../components/BotConnection.astro";
+import ClientList from "../../components/clients/ClientList.astro";
+import ClientModal from "../../components/clients/ClientModal.astro";
+
+const botId = Astro.url.searchParams.get("id") || "";
 ---
 
 <Layout title="Bot Detail">
@@ -137,12 +141,43 @@ import BotConnection from "../../components/BotConnection.astro";
                 <span x-text="$t('flows')">Flows</span>
             </button>
             <button
+                @click="activeTab = 'clients'"
+                class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
+                :class="activeTab === 'clients' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
+            >
+                <span>Clientes</span>
+            </button>
+            <button
                 @click="activeTab = 'logs'; loadLogs()"
                 class="px-6 py-2 text-xs font-mono uppercase tracking-widest transition-all rounded-full"
                 :class="activeTab === 'logs' ? 'bg-brand-purple text-white shadow-lg' : 'text-gray-500 hover:text-white'"
             >
                 <span x-text="$t('logs')">Logs</span>
             </button>
+        </div>
+
+        <!-- Clients Tab -->
+        <div x-show="activeTab === 'clients'" style="display: none;">
+            <div
+                class="bg-brand-panel/30 border border-white/5 p-6 relative min-h-[400px]"
+            >
+                <div class="cross-marker -top-[2px] -left-[2px]"></div>
+                <div class="cross-marker -top-[2px] -right-[2px]"></div>
+
+                <div class="flex justify-between items-center mb-6">
+                    <h3
+                        class="text-xs text-brand-purple uppercase tracking-widest"
+                    >
+                        Listado de Clientes
+                    </h3>
+                    <div class="flex gap-2">
+                        <!-- ClientModal Component Handles the 'Create' button -->
+                        <ClientModal botId={botId} />
+                    </div>
+                </div>
+
+                <ClientList botId={botId} />
+            </div>
         </div>
 
         <!-- Flows Tab -->
