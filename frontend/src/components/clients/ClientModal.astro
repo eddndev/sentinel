@@ -18,6 +18,315 @@ const isEdit = !!client;
         phoneNumber: '${client?.phoneNumber || ""}',
         contactNumber: '${client?.contactNumber || ""}',
         status: '${client?.status || "PAGO_PENDIENTE"}',
+        plainTextPassword: '', 
+        appointmentDate: '${client?.appointmentDate || ""}',
+        captureLine: '${client?.captureLine || ""}',
+        
+        captureLinePdfPath: '${client?.captureLinePdfPath || ""}',
+        accreditationPdfPath: '${client?.accreditationPdfPath || ""}',
+        appointmentPdfPath: '${client?.appointmentPdfPath || ""}'
+    },
+    botId: '${botId || ""}',
+    clientId: '${client?.id || ""}',
+    loading: false,
+
+    async submit() {
+        this.loading = true;
+        try {
+            const payload = { ...this.formData };
+            if (!payload.appointmentDate) delete payload.appointmentDate;
+            if (this.mode === 'create') {
+                payload.botId = this.botId;
+                await ApiClient.post('/clients', payload);
+            } else {
+                if (!payload.plainTextPassword) delete payload.plainTextPassword; 
+                await ApiClient.put('/clients/' + this.clientId, payload);
+            }
+            
+            window.location.reload(); 
+        } catch (e) {
+            console.error(e);
+            alert('Error: ' + e.message);
+        } finally {
+            this.loading = false;
+        }
+    }
+}`}
+>
+    <!-- Trigger Button (if creating) -->
+    <template x-if="mode === 'create'">
+        <button
+            @click="show = true"
+            class="px-6 py-2 bg-brand-purple text-white font-mono uppercase text-xs tracking-widest hover:bg-brand-purple/80 transition-colors flex items-center gap-2 rounded-full"
+        >
+            <span>+</span>
+            <span>Nuevo Cliente</span>
+        </button>
+    </template>
+
+    <!-- Modal Host -->
+    <div
+        x-show="show"
+        x-transition.opacity
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style="display: none;"
+    >
+        <!-- Backdrop -->
+        <div
+            class="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            @click="show = false"
+        >
+        </div>
+
+        <!-- Modal Content -->
+        <!-- Matches Bot Create Modal Style -->
+        <div
+            class="relative bg-brand-dark border border-white/10 p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+        >
+            <!-- Corner Markers -->
+            <div class="cross-marker -top-[2px] -left-[2px]"></div>
+            <div class="cross-marker -top-[2px] -right-[2px]"></div>
+            <div class="cross-marker -bottom-[2px] -left-[2px]"></div>
+            <div class="cross-marker -bottom-[2px] -right-[2px]"></div>
+
+            <h2
+                class="text-xl font-bold uppercase tracking-tight mb-6"
+                x-text="mode === 'create' ? 'Nuevo Cliente' : 'Editar Cliente'"
+            >
+            </h2>
+
+            <div class="space-y-6">
+                <!-- Name Field -->
+                <div>
+                    <label
+                        class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                        >Nombre Completo</label
+                    >
+                    <input
+                        type="text"
+                        x-model="formData.name"
+                        class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                        placeholder="Nombre Completo"
+                    />
+                </div>
+
+                <!-- Llave Group (Email + Phone ID) -->
+                <div class="border border-white/10 p-4 bg-white/5 relative">
+                    <div
+                        class="absolute -top-3 left-3 bg-brand-dark px-2 py-0.5 border border-white/10 text-[10px] text-brand-purple uppercase tracking-widest font-mono"
+                    >
+                        Llave Única
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <div>
+                            <label
+                                class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                                >Email</label
+                            >
+                            <input
+                                type="email"
+                                x-model="formData.email"
+                                class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                            />
+                        </div>
+                        <div>
+                            <label
+                                class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                                >Teléfono (ID)</label
+                            >
+                            <input
+                                type="text"
+                                x-model="formData.phoneNumber"
+                                class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                                placeholder="521..."
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Field -->
+                <div>
+                    <label
+                        class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                        >Estatus</label
+                    >
+                    <select
+                        x-model="formData.status"
+                        class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white"
+                    >
+                        <option value="LINEA_DE_CAPTURA_CREADA"
+                            >Línea de Captura Creada</option
+                        >
+                        <option value="CITA_AGENDADA">Cita Agendada</option>
+                        <option value="PAGO_PENDIENTE">Pago Pendiente</option>
+                        <option value="PAGADO">Pagado</option>
+                    </select>
+                </div>
+
+                <!-- Contact & Security -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            >Teléfono Contacto</label
+                        >
+                        <input
+                            type="text"
+                            x-model="formData.contactNumber"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                            placeholder="Opcional"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            >Contraseña (Texto Plano)</label
+                        >
+                        <input
+                            type="text"
+                            x-model="formData.plainTextPassword"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                            :placeholder="mode === 'edit' ? 'Dejar vacío para mantener' : 'Requerido'"
+                        />
+                        <p
+                            class="text-[10px] text-brand-purple font-mono mt-1"
+                            x-show="mode === 'create'"
+                        >
+                            * Se encriptará al guardar
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Logistics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            >Fecha Cita</label
+                        >
+                        <input
+                            type="datetime-local"
+                            x-model="formData.appointmentDate"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                            >Línea de Captura</label
+                        >
+                        <input
+                            type="text"
+                            x-model="formData.captureLine"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white placeholder-gray-600"
+                        />
+                    </div>
+                </div>
+
+                <!-- Files (PDF) -->
+                <div>
+                    <h3
+                        class="text-xs font-bold uppercase tracking-widest mb-4 border-b border-white/10 pb-2"
+                    >
+                        Archivos (PDF)
+                    </h3>
+                    <div
+                        class="grid grid-cols-1 gap-4"
+                        x-data="{
+                        async handleUpload(event, field) {
+                            const file = event.target.files[0];
+                            if (!file) return;
+                            
+                            const btn = event.target.previousElementSibling; 
+                            const originalText = btn.innerText;
+                            btn.innerText = 'Subiendo...';
+                            
+                            try {
+                                const res = await ApiClient.uploadFile(file);
+                                if (res.status === 'success') {
+                                    formData[field] = res.url;
+                                    btn.innerText = 'Subido ✔';
+                                    btn.classList.add('text-green-400');
+                                }
+                            } catch (e) {
+                                console.error(e);
+                                alert('Error subiendo archivo');
+                                btn.innerText = originalText;
+                            }
+                        }
+                    }"
+                    >
+                        <template
+                            x-for="(label, field) in {
+                            appointmentPdfPath: 'PDF Cita',
+                            accreditationPdfPath: 'PDF Constancia',
+                            captureLinePdfPath: 'PDF Captura'
+                        }"
+                        >
+                            <div
+                                class="flex items-center justify-between p-3 border border-white/10 bg-white/5"
+                            >
+                                <div class="flex flex-col">
+                                    <span
+                                        class="text-xs font-mono uppercase text-gray-400"
+                                        x-text="label"></span>
+                                    <span
+                                        x-show="formData[field]"
+                                        class="text-[10px] text-brand-purple truncate max-w-[200px]"
+                                        x-text="formData[field]"></span>
+                                </div>
+
+                                <label
+                                    class="cursor-pointer px-3 py-1 bg-black/40 border border-white/10 hover:bg-white/5 text-[10px] uppercase font-mono text-gray-300 transition-colors"
+                                >
+                                    <span
+                                        x-text="formData[field] ? 'Cambiar' : 'Seleccionar'"
+                                    ></span>
+                                    <input
+                                        type="file"
+                                        accept=".pdf"
+                                        class="hidden"
+                                        @change="handleUpload($event, field)"
+                                    />
+                                </label>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex gap-4 pt-6 mt-6 border-t border-white/5">
+                <button
+                    type="button"
+                    @click="show = false"
+                    class="flex-1 px-4 py-3 border border-white/10 text-gray-400 font-mono uppercase text-xs hover:bg-white/5 transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button
+                    type="button"
+                    @click="submit()"
+                    :disabled="loading"
+                    class="flex-1 px-4 py-3 bg-brand-purple text-white font-mono uppercase text-xs hover:bg-brand-purple/80 disabled:opacity-50 transition-colors"
+                    x-text="loading ? 'Guardando...' : 'Guardar'"
+                >
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div
+    x-data={`{
+    show: false,
+    mode: '${isEdit ? "edit" : "create"}',
+    formData: {
+        name: '${client?.name || ""}',
+        email: '${client?.email || ""}',
+        phoneNumber: '${client?.phoneNumber || ""}',
+        contactNumber: '${client?.contactNumber || ""}',
+        status: '${client?.status || "PAGO_PENDIENTE"}',
         plainTextPassword: '', // Always empty on load for security? Or should we fill? Creating = empty. Editing = empty (fill only if changing).
         appointmentDate: '${client?.appointmentDate || ""}',
         captureLine: '${client?.captureLine || ""}',
