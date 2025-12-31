@@ -77,6 +77,8 @@ jobs:
             echo "SUPER_ADMIN_EMAIL=${{ secrets.SUPER_ADMIN_EMAIL }}" >> .env
             echo "SUPER_ADMIN_PASSWORD=${{ secrets.SUPER_ADMIN_PASSWORD }}" >> .env
             echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> .env
+            echo "API_DOMAIN=api-sentinel.angelviajero.com.mx" >> .env
+            echo "APP_DOMAIN=app.angelviajero.com.mx" >> .env
             
             echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u eddndev --password-stdin
             

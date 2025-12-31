@@ -8,6 +8,9 @@ services:
     environment:
       - REDIS_URL=redis://redis:6379
       - DATABASE_URL=${DATABASE_URL}
+      - VIRTUAL_HOST=${API_DOMAIN}
+      - LETSENCRYPT_HOST=${API_DOMAIN}
+      - VIRTUAL_PORT=8081
     depends_on:
       - redis
       - postgres
@@ -23,6 +26,9 @@ services:
     build:
       context: ../
       dockerfile: docker/frontend.Dockerfile
+    environment:
+      - VIRTUAL_HOST=${APP_DOMAIN}
+      - LETSENCRYPT_HOST=${APP_DOMAIN}
     networks:
       - sentinel-net
       - proxy-net
