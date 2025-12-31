@@ -317,208 +317,158 @@ const isEdit = !!client;
     </div>
 </div>
 
-<div
-    x-data={`{
-    show: false,
-    mode: '${isEdit ? "edit" : "create"}',
-    formData: {
-        name: '${client?.name || ""}',
-        email: '${client?.email || ""}',
-        phoneNumber: '${client?.phoneNumber || ""}',
-        contactNumber: '${client?.contactNumber || ""}',
-        status: '${client?.status || "PAGO_PENDIENTE"}',
-        plainTextPassword: '', // Always empty on load for security? Or should we fill? Creating = empty. Editing = empty (fill only if changing).
-        appointmentDate: '${client?.appointmentDate || ""}',
-        captureLine: '${client?.captureLine || ""}',
-        
-        // Mocking PDF paths for now as text inputs, in real app use File Input + Upload Handler
-        captureLinePdfPath: '${client?.captureLinePdfPath || ""}',
-        accreditationPdfPath: '${client?.accreditationPdfPath || ""}',
-        appointmentPdfPath: '${client?.appointmentPdfPath || ""}'
-    },
-    botId: '${botId || ""}',
-    clientId: '${client?.id || ""}',
-    loading: false,
-
-    async submit() {
-        this.loading = true;
-        try {
-            const payload = { ...this.formData };
-            if (!payload.appointmentDate) delete payload.appointmentDate;
-            if (this.mode === 'create') {
-                payload.botId = this.botId;
-                await ApiClient.post('/clients', payload);
-            } else {
-                if (!payload.plainTextPassword) delete payload.plainTextPassword; // Don't send if empty/unchanged
-                await ApiClient.put('/clients/' + this.clientId, payload);
-            }
-            
-            // Emit success event or reload
-            window.location.reload(); 
-        } catch (e) {
-            console.error(e);
-            alert('Error saving client: ' + e.message);
-        } finally {
-            this.loading = false;
-        }
-    }
-}`}
->
-    <!-- Trigger Button (if creating) -->
-    <template x-if="mode === 'create'">
-        <button
-            @click="show = true"
-            class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium text-sm transition-colors flex items-center gap-2"
-        >
-            <span>+ Nuevo Cliente</span>
-        </button>
-    </template>
-
-    <!-- Trigger Button (if editing - e.g. just a button, or assume parent controls show) -->
-    <!-- For now, this component is self-contained for Create. For Edit, it might be embedded in detail page. -->
-
-    <!-- Modal Backdrop -->
-    <div
-        x-show="show"
-        x-transition.opacity
-        class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-        style="display: none;"
+<!-- Trigger Button (if creating) -->
+<template x-if="mode === 'create'">
+    <button
+        @click="show = true"
+        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white font-medium text-sm transition-colors flex items-center gap-2"
     >
-        <!-- Modal Content -->
+        <span>+ Nuevo Cliente</span>
+    </button>
+</template>
+
+<!-- Trigger Button (if editing - e.g. just a button, or assume parent controls show) -->
+<!-- For now, this component is self-contained for Create. For Edit, it might be embedded in detail page. -->
+
+<!-- Modal Backdrop -->
+<div
+    x-show="show"
+    x-transition.opacity
+    class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+    style="display: none;"
+>
+    <!-- Modal Content -->
+    <div
+        @click.away="show = false"
+        class="bg-[#1a1a1a] border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+    >
         <div
-            @click.away="show = false"
-            class="bg-[#1a1a1a] border border-white/10 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl"
+            class="p-6 border-b border-white/10 flex justify-between items-center"
         >
-            <div
-                class="p-6 border-b border-white/10 flex justify-between items-center"
+            <h2
+                class="text-xl font-semibold text-white"
+                x-text="mode === 'create' ? 'Nuevo Cliente' : 'Editar Cliente'"
             >
-                <h2
-                    class="text-xl font-semibold text-white"
-                    x-text="mode === 'create' ? 'Nuevo Cliente' : 'Editar Cliente'"
+            </h2>
+            <button @click="show = false" class="text-gray-400 hover:text-white"
+                >&times;</button
+            >
+        </div>
+
+        <div class="p-6 space-y-4">
+            <!-- Name Field -->
+            <div>
+                <label class="block text-xs uppercase text-gray-500 mb-1"
+                    >Nombre Completo</label
                 >
-                </h2>
-                <button
-                    @click="show = false"
-                    class="text-gray-400 hover:text-white">&times;</button
-                >
+                <input
+                    type="text"
+                    x-model="formData.name"
+                    class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                />
             </div>
 
-            <div class="p-6 space-y-4">
-                <!-- Name Field -->
+            <!-- Llave Group (Email + Phone ID) -->
+            <div
+                class="border border-white/10 rounded-lg p-4 bg-white/5 relative mt-6 mb-2"
+            >
+                <div
+                    class="absolute -top-3 left-3 bg-[#1a1a1a] px-2 py-0.5 border border-white/10 rounded text-[10px] text-brand-purple uppercase tracking-widest font-semibold shadow-sm"
+                >
+                    Llave
+                </div>
+                <div class="grid grid-cols-2 gap-4 pt-1">
+                    <div>
+                        <label
+                            class="block text-xs uppercase text-gray-500 mb-1"
+                            >Email</label
+                        >
+                        <input
+                            type="email"
+                            x-model="formData.email"
+                            class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-purple placeholder-gray-600"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            class="block text-xs uppercase text-gray-500 mb-1"
+                            >Teléfono (ID)</label
+                        >
+                        <input
+                            type="text"
+                            x-model="formData.phoneNumber"
+                            class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-purple placeholder-gray-600"
+                            placeholder="521..."
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Contact Info -->
+            <div class="grid grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs uppercase text-gray-500 mb-1"
-                        >Nombre Completo</label
+                        >Teléfono Contacto</label
                     >
                     <input
                         type="text"
-                        x-model="formData.name"
+                        x-model="formData.contactNumber"
                         class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                        placeholder="Opcional"
                     />
                 </div>
 
-                <!-- Llave Group (Email + Phone ID) -->
-                <div
-                    class="border border-white/10 rounded-lg p-4 bg-white/5 relative mt-6 mb-2"
-                >
-                    <div
-                        class="absolute -top-3 left-3 bg-[#1a1a1a] px-2 py-0.5 border border-white/10 rounded text-[10px] text-brand-purple uppercase tracking-widest font-semibold shadow-sm"
-                    >
-                        Llave
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 pt-1">
-                        <div>
-                            <label
-                                class="block text-xs uppercase text-gray-500 mb-1"
-                                >Email</label
-                            >
-                            <input
-                                type="email"
-                                x-model="formData.email"
-                                class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-purple placeholder-gray-600"
-                            />
-                        </div>
-                        <div>
-                            <label
-                                class="block text-xs uppercase text-gray-500 mb-1"
-                                >Teléfono (ID)</label
-                            >
-                            <input
-                                type="text"
-                                x-model="formData.phoneNumber"
-                                class="w-full bg-black/40 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-brand-purple placeholder-gray-600"
-                                placeholder="521..."
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Other Contact Info -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label
                             class="block text-xs uppercase text-gray-500 mb-1"
-                            >Teléfono Contacto</label
+                            >Contraseña (Texto Plano)</label
                         >
                         <input
                             type="text"
-                            x-model="formData.contactNumber"
-                            class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            placeholder="Opcional"
+                            x-model="formData.plainTextPassword"
+                            class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 placeholder-gray-600"
+                            :placeholder="mode === 'edit' ? 'Dejar vacío para mantener' : 'Requerido'"
                         />
+                        <p
+                            class="text-[10px] text-red-400 mt-1"
+                            x-show="mode === 'create'"
+                        >
+                            * Se guardará encriptada
+                        </p>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label
-                                class="block text-xs uppercase text-gray-500 mb-1"
-                                >Contraseña (Texto Plano)</label
-                            >
-                            <input
-                                type="text"
-                                x-model="formData.plainTextPassword"
-                                class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500 placeholder-gray-600"
-                                :placeholder="mode === 'edit' ? 'Dejar vacío para mantener' : 'Requerido'"
-                            />
-                            <p
-                                class="text-[10px] text-red-400 mt-1"
-                                x-show="mode === 'create'"
-                            >
-                                * Se guardará encriptada
-                            </p>
-                        </div>
-                        <div>
-                            <label
-                                class="block text-xs uppercase text-gray-500 mb-1"
-                                >Fecha Cita</label
-                            >
-                            <input
-                                type="datetime-local"
-                                x-model="formData.appointmentDate"
-                                class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
-                            />
-                        </div>
-                    </div>
-
                     <div>
                         <label
                             class="block text-xs uppercase text-gray-500 mb-1"
-                            >Línea de Captura</label
+                            >Fecha Cita</label
                         >
                         <input
-                            type="text"
-                            x-model="formData.captureLine"
+                            type="datetime-local"
+                            x-model="formData.appointmentDate"
                             class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
                         />
                     </div>
+                </div>
 
-                    <div class="border-t border-white/10 pt-4 mt-2">
-                        <p class="text-sm font-medium text-white mb-3">
-                            Archivos (PDF)
-                        </p>
+                <div>
+                    <label class="block text-xs uppercase text-gray-500 mb-1"
+                        >Línea de Captura</label
+                    >
+                    <input
+                        type="text"
+                        x-model="formData.captureLine"
+                        class="w-full bg-white/5 border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500"
+                    />
+                </div>
 
-                        <div
-                            class="space-y-4"
-                            x-data="{
+                <div class="border-t border-white/10 pt-4 mt-2">
+                    <p class="text-sm font-medium text-white mb-3">
+                        Archivos (PDF)
+                    </p>
+
+                    <div
+                        class="space-y-4"
+                        x-data="{
                             async handleUpload(event, field) {
                                 const file = event.target.files[0];
                                 if (!file) return;
@@ -542,72 +492,69 @@ const isEdit = !!client;
                                 }
                             }
                         }"
-                        >
-                            <!-- Repeated block for each file -->
-                            <template
-                                x-for="(label, field) in {
+                    >
+                        <!-- Repeated block for each file -->
+                        <template
+                            x-for="(label, field) in {
                                 appointmentPdfPath: 'PDF Cita',
                                 accreditationPdfPath: 'PDF Constancia',
                                 captureLinePdfPath: 'PDF Captura'
                             }"
+                        >
+                            <div
+                                class="bg-white/5 p-3 rounded border border-white/10"
                             >
                                 <div
-                                    class="bg-white/5 p-3 rounded border border-white/10"
+                                    class="flex justify-between items-center mb-2"
                                 >
-                                    <div
-                                        class="flex justify-between items-center mb-2"
-                                    >
-                                        <label
-                                            class="text-xs uppercase text-gray-500"
-                                            x-text="label"></label>
-                                        <span
-                                            x-show="formData[field]"
-                                            class="text-[10px] text-brand-purple truncate max-w-[150px]"
-                                            x-text="formData[field]"></span>
-                                    </div>
-
-                                    <div class="flex items-center gap-2">
-                                        <!-- File Input -->
-                                        <label
-                                            class="cursor-pointer flex items-center gap-2 px-3 py-2 bg-black/40 hover:bg-black/60 border border-white/10 rounded text-xs text-gray-300 transition-colors w-full justify-center"
-                                        >
-                                            <span
-                                                x-text="formData[field] ? 'Cambiar Archivo' : 'Seleccionar PDF'"
-                                            ></span>
-                                            <input
-                                                type="file"
-                                                accept=".pdf"
-                                                class="hidden"
-                                                @change="handleUpload($event, field)"
-                                            />
-                                        </label>
-
-                                        <!-- Hidden Input to store path -->
-                                        <input
-                                            type="hidden"
-                                            x-model="formData[field]"
-                                        />
-                                    </div>
+                                    <label
+                                        class="text-xs uppercase text-gray-500"
+                                        x-text="label"></label>
+                                    <span
+                                        x-show="formData[field]"
+                                        class="text-[10px] text-brand-purple truncate max-w-[150px]"
+                                        x-text="formData[field]"></span>
                                 </div>
-                            </template>
-                        </div>
+
+                                <div class="flex items-center gap-2">
+                                    <!-- File Input -->
+                                    <label
+                                        class="cursor-pointer flex items-center gap-2 px-3 py-2 bg-black/40 hover:bg-black/60 border border-white/10 rounded text-xs text-gray-300 transition-colors w-full justify-center"
+                                    >
+                                        <span
+                                            x-text="formData[field] ? 'Cambiar Archivo' : 'Seleccionar PDF'"
+                                        ></span>
+                                        <input
+                                            type="file"
+                                            accept=".pdf"
+                                            class="hidden"
+                                            @change="handleUpload($event, field)"
+                                        />
+                                    </label>
+
+                                    <!-- Hidden Input to store path -->
+                                    <input
+                                        type="hidden"
+                                        x-model="formData[field]"
+                                    />
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
+            </div>
 
-                <div
-                    class="p-6 border-t border-white/10 flex justify-end gap-3"
+            <div class="p-6 border-t border-white/10 flex justify-end gap-3">
+                <button
+                    @click="show = false"
+                    class="px-4 py-2 hover:bg-white/5 rounded text-gray-300 text-sm"
+                    >Cancelar</button
                 >
-                    <button
-                        @click="show = false"
-                        class="px-4 py-2 hover:bg-white/5 rounded text-gray-300 text-sm"
-                        >Cancelar</button
-                    >
-                    <button
-                        @click="submit()"
-                        class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white text-sm font-medium"
-                        :disabled="loading"
-                        x-text="loading ? 'Guardando...' : 'Guardar'"></button>
-                </div>
+                <button
+                    @click="submit()"
+                    class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-white text-sm font-medium"
+                    :disabled="loading"
+                    x-text="loading ? 'Guardando...' : 'Guardar'"></button>
             </div>
         </div>
     </div>
