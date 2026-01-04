@@ -130,7 +130,7 @@ export class BaileysService {
 
     private static async handleIncomingMessage(botId: string, msg: WAMessage & { message: any }) { // Type intersection specific to local context
         const rawFrom = msg.key.remoteJid;
-        if (!rawFrom || msg.key.fromMe) return;
+        if (!rawFrom) return;
 
         // CRITICAL: Normalize JID (convert @lid to @s.whatsapp.net) to identify user consistently
         let from = jidNormalizedUser(rawFrom);
@@ -213,6 +213,7 @@ export class BaileysService {
                             externalId: messageExternalId,
                             sessionId: session.id,
                             sender: from,
+                            fromMe: msg.key.fromMe || false,
                             content,
                             type: msgType,
                             isProcessed: false

@@ -25,7 +25,7 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
         return trigger;
     })
     .post("/", async ({ body, set }) => {
-        const { botId, flowId, keyword, matchType, isActive, usageLimit, cooldownMs } = body as any;
+        const { botId, flowId, keyword, matchType, isActive, usageLimit, cooldownMs, scope } = body as any;
 
         try {
             const trigger = await prisma.trigger.create({
@@ -34,9 +34,8 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
                     flowId,
                     keyword,
                     matchType: (matchType as MatchType) || MatchType.CONTAINS,
-                    isActive: isActive ?? true,
-                    usageLimit: usageLimit || 0,
-                    cooldownMs: cooldownMs || 0
+                    scope: (scope as any) || "INCOMING",
+                    isActive: isActive ?? true
                 }
             });
             return trigger;
@@ -50,13 +49,14 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
             flowId: t.String(),
             keyword: t.String(),
             matchType: t.Optional(t.String()),
+            scope: t.Optional(t.String()),
             isActive: t.Optional(t.Boolean()),
             usageLimit: t.Optional(t.Number()),
             cooldownMs: t.Optional(t.Number())
         })
     })
     .put("/:id", async ({ params: { id }, body, set }) => {
-        const { keyword, matchType, isActive, usageLimit, cooldownMs, flowId } = body as any;
+        const { keyword, matchType, isActive, usageLimit, cooldownMs, flowId, scope } = body as any;
 
         try {
             const trigger = await prisma.trigger.update({
@@ -64,9 +64,8 @@ export const triggerController = new Elysia({ prefix: "/triggers" })
                 data: {
                     keyword,
                     matchType: matchType as MatchType,
+                    scope: scope as any,
                     isActive,
-                    usageLimit,
-                    cooldownMs,
                     flowId
                 }
             });

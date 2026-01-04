@@ -172,6 +172,15 @@ import MediaPicker from "../components/MediaPicker.astro";
                                 <!-- Row 1: Match Type + Keyword + Delete -->
                                 <div class="flex gap-3 items-center">
                                     <select
+                                        x-model="trigger.scope"
+                                        class="bg-white/10 text-[10px] font-mono text-brand-purple px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple"
+                                        title="Trigger Scope"
+                                    >
+                                        <option value="INCOMING">IN</option>
+                                        <option value="OUTGOING">OUT</option>
+                                        <option value="BOTH">ALL</option>
+                                    </select>
+                                    <select
                                         x-model="trigger.matchType"
                                         class="bg-white/10 text-xs font-mono text-white px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple"
                                     >
@@ -394,6 +403,7 @@ import MediaPicker from "../components/MediaPicker.astro";
     interface Trigger {
         keyword: string;
         matchType: string;
+        scope?: string;
     }
     interface Step {
         id?: string;
@@ -515,6 +525,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                 this.flow.triggers.push({
                     keyword: "",
                     matchType: "CONTAINS",
+                    scope: "INCOMING",
                 });
             },
 

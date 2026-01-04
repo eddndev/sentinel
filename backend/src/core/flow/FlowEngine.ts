@@ -1,5 +1,5 @@
 import { prisma } from "../../services/postgres.service";
-import { Message, Trigger } from "@prisma/client";
+import { Message, Trigger, TriggerScope } from "@prisma/client";
 import { TriggerMatcher } from "../matcher/TriggerMatcher";
 import { redis } from "../../services/redis.service";
 import { queueService } from "../../services/queue.service";
@@ -28,9 +28,15 @@ export class FlowEngine {
         }
 
         // 2. Check Triggers (Session-Specific OR Global Bot Triggers)
+        // Determine valid scopes based on direction
+        const validScopes: TriggerScope[] = message.fromMe
+            ? [TriggerScope.OUTGOING, TriggerScope.BOTH]
+            : [TriggerScope.INCOMING, TriggerScope.BOTH];
+
         const activeTriggers = await prisma.trigger.findMany({
             where: {
                 isActive: true,
+                scope: { in: validScopes },
                 OR: [
                     { sessionId: sessionId },                   // Specific to this user session
                     { botId: session.botId, sessionId: null }   // Global for the bot
@@ -42,7 +48,8 @@ export class FlowEngine {
         const match = TriggerMatcher.findMatch(message.content, activeTriggers);
 
         if (match) {
-            const { trigger } = match;
+            // Cast to include relation (Prisma return type was narrowed by Matcher)
+            const trigger = match.trigger as Trigger & { flow: any };
             const lockKey = `flow:lock:${sessionId}:${trigger.flowId}`;
 
             // 3. Acquire distributed lock to prevent race conditions

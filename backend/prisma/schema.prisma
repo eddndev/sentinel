@@ -38,6 +38,12 @@ enum StepType {
   PTT // "Voice Note" (Push-To-Talk) simulation
 }
 
+enum TriggerScope {
+  INCOMING
+  OUTGOING
+  BOTH
+}
+
 
 
 model User {
@@ -97,8 +103,9 @@ model Trigger {
   sessionId   String?   // Optional: If set, purely local to a session. If null, global for the bot.
   session     Session?  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   
-  keyword     String    
-  matchType   MatchType @default(CONTAINS)
+  keyword     String
+  matchType   MatchType    @default(CONTAINS)
+  scope       TriggerScope @default(INCOMING)
   
   isActive    Boolean   @default(true)
   
@@ -181,6 +188,7 @@ model Message {
   session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   
   sender        String   
+  fromMe        Boolean  @default(false)
   content       String?  @db.Text
   type          String   
   metadata      Json?    
