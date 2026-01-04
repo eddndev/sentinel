@@ -56,6 +56,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
                         create: (triggers || []).map((t: any) => ({
                             keyword: t.keyword,
                             matchType: t.matchType || 'CONTAINS',
+                            scope: t.scope || 'INCOMING',
                             botId
                         }))
                     }
@@ -98,6 +99,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
                             create: (triggers || []).map((t: any) => ({
                                 keyword: t.keyword,
                                 matchType: t.matchType || 'CONTAINS',
+                                scope: t.scope || 'INCOMING',
                                 botId
                             }))
                         }
@@ -160,6 +162,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
                         create: sourceFlow.triggers.map(t => ({
                             keyword: t.keyword,
                             matchType: t.matchType,
+                            scope: t.scope,
                             botId: targetBotId
                         }))
                     }
