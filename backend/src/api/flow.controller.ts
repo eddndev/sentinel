@@ -73,7 +73,6 @@ export const flowController = new Elysia({ prefix: "/flows" })
         const { botId, name, description, steps, triggers } = body as any;
 
         try {
-            console.log(`[FlowController] Updating Flow ${id}. Triggers:`, JSON.stringify(triggers, null, 2));
             // Atomic update: Delete old steps/triggers and create new ones
             const flow = await prisma.$transaction(async (tx) => {
                 await tx.step.deleteMany({ where: { flowId: id } });

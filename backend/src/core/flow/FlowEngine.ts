@@ -34,7 +34,6 @@ export class FlowEngine {
             ? [TriggerScope.OUTGOING, TriggerScope.BOTH]
             : [TriggerScope.INCOMING, TriggerScope.BOTH];
 
-        console.log(`[FlowEngine] Processing Msg: ${message.content.substring(0, 20)}... | FromMe: ${message.fromMe} | Scopes: ${validScopes.join(',')}`);
 
         const activeTriggers = await prisma.trigger.findMany({
             where: {
@@ -47,8 +46,6 @@ export class FlowEngine {
             },
             include: { flow: true } // Include flow to log name if matched
         });
-
-        console.log(`[FlowEngine] Found ${activeTriggers.length} active triggers for this scope.`);
 
         const match = TriggerMatcher.findMatch(message.content, activeTriggers);
 
