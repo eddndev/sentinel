@@ -18,6 +18,10 @@ jobs:
           script: |
             set -e
 
+            # Ensure Bun is in path (Standard location for bun install script)
+            export BUN_INSTALL="$HOME/.bun"
+            export PATH="$BUN_INSTALL/bin:$PATH"
+
             echo "Starting Deployment..."
             
             cd /var/www/sentinel
