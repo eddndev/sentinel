@@ -129,8 +129,22 @@ export class StepProcessor {
         for (const branch of metadata.branches) {
             const start = toMinutes(branch.startTime);
             const end = toMinutes(branch.endTime);
+            let isMatch = false;
 
-            if (currentMinutes >= start && currentMinutes < end) {
+            if (start < end) {
+                // Standard range (e.g., 09:00 to 17:00)
+                if (currentMinutes >= start && currentMinutes < end) {
+                    isMatch = true;
+                }
+            } else {
+                // Midnight crossing range (e.g., 22:00 to 06:00)
+                // Match if we are AFTER start (22:00...23:59) OR BEFORE end (00:00...06:00)
+                if (currentMinutes >= start || currentMinutes < end) {
+                    isMatch = true;
+                }
+            }
+
+            if (isMatch) {
                 console.log(`[StepProcessor] Matched Branch: ${branch.startTime} - ${branch.endTime}`);
                 matchFound = true;
                 

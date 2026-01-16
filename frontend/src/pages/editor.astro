@@ -566,14 +566,32 @@ import MediaPicker from "../components/MediaPicker.astro";
             hasOverlap(branches: any[]) {
                 if (!branches || branches.length < 2) return false;
                 
-                // Convert to minutes for comparison
-                const ranges = branches.map(b => {
+                // Prepare normalized ranges (handling midnight crossing)
+                const ranges: { start: number, end: number }[] = [];
+                
+                branches.forEach(b => {
                     const [sh, sm] = (b.startTime || "00:00").split(':').map(Number);
                     const [eh, em] = (b.endTime || "00:00").split(':').map(Number);
-                    return { start: sh * 60 + sm, end: eh * 60 + em };
-                }).sort((a, b) => a.start - b.start);
+                    const start = sh * 60 + sm;
+                    const end = eh * 60 + em;
 
+                    if (start < end) {
+                        ranges.push({ start, end });
+                    } else {
+                        // Crosses midnight: Split into [start, 1440] and [0, end]
+                        // e.g. 22:00 (1320) to 06:00 (360) -> [1320, 1440] and [0, 360]
+                        ranges.push({ start, end: 24 * 60 });
+                        ranges.push({ start: 0, end });
+                    }
+                });
+
+                // Sort by start time
+                ranges.sort((a, b) => a.start - b.start);
+
+                // Check for overlaps
                 for (let i = 0; i < ranges.length - 1; i++) {
+                    // If current end is greater than next start, we have an overlap
+                    // We use > because touching boundaries (12:00 end, 12:00 start) is usually allowed
                     if (ranges[i].end > ranges[i + 1].start) return true;
                 }
                 return false;
