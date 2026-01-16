@@ -62,6 +62,12 @@ export default {
     select_media: "Select Media",
     media_url_placeholder: "Media URL...",
     caption_placeholder: "Caption (Optional)...",
+    add_step_conditional: "Time Condition",
+    time_condition_desc: "Define time ranges. The first match executes.",
+    add_time_range: "Add Time Range",
+    overlap_warning: "Warning: Ranges overlap.",
+    fallback_label: "Fallback (Else)",
+    pick: "Pick",
 
     // Actions
     save_changes: "Save Changes",

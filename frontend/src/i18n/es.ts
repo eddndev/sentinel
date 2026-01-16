@@ -62,6 +62,12 @@ export default {
     select_media: "Seleccionar Multimedia",
     media_url_placeholder: "URL del archivo...",
     caption_placeholder: "Leyenda (Opcional)...",
+    add_step_conditional: "Condición de Tiempo",
+    time_condition_desc: "Define rangos horarios. Se ejecuta el primero que coincida.",
+    add_time_range: "Añadir Rango",
+    overlap_warning: "Aviso: Los rangos se solapan.",
+    fallback_label: "Caso por defecto (Else)",
+    pick: "Elegir",
 
     // Actions
     save_changes: "Guardar Cambios",
