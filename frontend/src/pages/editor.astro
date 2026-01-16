@@ -262,14 +262,26 @@ import MediaPicker from "../components/MediaPicker.astro";
                                 class="step-card bg-[#0f172a] border border-white/10 p-4 relative group hover:border-brand-purple/50 transition-colors"
                                 :data-id="index"
                             >
-                                <!-- Handle -->
+                                <!-- Reorder Controls -->
                                 <div
-                                    class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-600 cursor-move handle px-2"
+                                    class="absolute left-2 top-4 flex flex-col gap-1 items-center z-10 w-6"
                                 >
-                                    ⋮⋮
+                                    <button 
+                                        @click="moveUp(index)" 
+                                        class="text-gray-600 hover:text-brand-purple text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                        :disabled="index === 0"
+                                    >▲</button>
+                                    
+                                    <div class="text-gray-500 cursor-move handle py-1 hover:text-white select-none" title="Drag">⋮⋮</div>
+                                    
+                                    <button 
+                                        @click="moveDown(index)" 
+                                        class="text-gray-600 hover:text-brand-purple text-[10px] leading-none p-1 disabled:opacity-20 disabled:cursor-not-allowed transition-colors"
+                                        :disabled="index === flow.steps.length - 1"
+                                    >▼</button>
                                 </div>
 
-                                <div class="pl-8">
+                                <div class="pl-10">
                                     <div
                                         class="flex justify-between text-xs font-mono text-gray-400 mb-3 uppercase tracking-wide items-center"
                                     >
@@ -485,6 +497,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                     if (el) {
                         Sortable.create(el, {
                             handle: ".handle",
+                            draggable: ".step-card",
                             animation: 150,
                             onEnd: (evt: any) => {
                                 const { oldIndex, newIndex } = evt;
@@ -498,13 +511,29 @@ import MediaPicker from "../components/MediaPicker.astro";
                                 this.flow.steps.splice(newIndex, 0, item);
 
                                 // Update order
-                                this.flow.steps.forEach(
-                                    (s: Step, i: number) => (s.order = i),
-                                );
+                                this.updateOrder();
                             },
                         });
                     }
                 });
+            },
+
+            updateOrder() {
+                this.flow.steps.forEach((s: Step, i: number) => (s.order = i));
+            },
+
+            moveUp(index: number) {
+                if (index === 0) return;
+                const item = this.flow.steps.splice(index, 1)[0];
+                this.flow.steps.splice(index - 1, 0, item);
+                this.updateOrder();
+            },
+
+            moveDown(index: number) {
+                if (index === this.flow.steps.length - 1) return;
+                const item = this.flow.steps.splice(index, 1)[0];
+                this.flow.steps.splice(index + 1, 0, item);
+                this.updateOrder();
             },
 
             async loadFlow(id: string) {
