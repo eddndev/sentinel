@@ -36,6 +36,7 @@ enum StepType {
   VIDEO
   DOCUMENT
   PTT // "Voice Note" (Push-To-Talk) simulation
+  CONDITIONAL_TIME // Time-based branching
 }
 
 enum TriggerScope {
