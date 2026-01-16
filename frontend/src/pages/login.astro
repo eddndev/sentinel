@@ -133,26 +133,19 @@ import "../styles/global.css";
                         this.errorMessage = ''; // Changed from this.error to match x-data
 
                         try {
-                            console.log('Attempting login with:', this.email);
                             const response = await api.post('/auth/login', {
                                 email: this.email,
                                 password: this.password
                             });
                             
-                            console.log('Login response:', response);
-
                             if (response.token) {
-                                console.log('Token received, storing...');
                                 setToken(response.token);
                                 setUser(response.user);
-                                console.log('Redirecting to /...');
-                                window.location.href = '/'; 
+                                window.location.href = '/';
                             } else {
-                                console.error('No token in response');
                                 this.errorMessage = 'Login failed: No token received';
                             }
                         } catch (err) {
-                            console.error('Login error catch:', err);
                             this.errorMessage = err instanceof Error ? err.message : 'Login failed';
                         } finally {
                             this.loading = false;

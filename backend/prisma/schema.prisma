@@ -63,6 +63,7 @@ model Bot {
   platform    Platform
   identifier  String   @unique // Phone number (WhatsApp) or Token (Telegram)
   credentials Json?    // { apiKey, webhookVerifyToken, etc. }
+  ipv6Address String?  // Optional IPv6 for outgoing connection
   
   flows       Flow[]
   sessions    Session[]

@@ -11,6 +11,7 @@ import makeWASocket, {
 import { Boom } from '@hapi/boom';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as https from 'node:https';
 import QRCode from 'qrcode';
 import { prisma } from './postgres.service';
 import { flowEngine } from '../core/flow';
@@ -43,6 +44,19 @@ export class BaileysService {
         const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
         const { version, isLatest } = await fetchLatestBaileysVersion();
 
+        // Fetch bot config to check for IPv6 assignment
+        const botConfig = await prisma.bot.findUnique({ where: { id: botId } });
+        let socketAgent;
+
+        if (botConfig?.ipv6Address) {
+            console.log(`[Baileys] Bot ${botConfig.name} will bind to IPv6: ${botConfig.ipv6Address}`);
+            socketAgent = new https.Agent({
+                localAddress: botConfig.ipv6Address,
+                family: 6,
+                keepAlive: true
+            });
+        }
+
         console.log(`[${new Date().toISOString()}] [Baileys] Using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
         try {
@@ -56,8 +70,12 @@ export class BaileysService {
                     keys: makeCacheableSignalKeyStore(state.keys, logger),
                 },
                 generateHighQualityLinkPreview: true,
-                // Increase timeout for QR generation if possible, or handle via connection update
                 qrTimeout: 60000,
+                // Custom Agent for IPv6 Binding
+                ...(socketAgent && {
+                    agent: socketAgent,
+                    fetchAgent: socketAgent
+                })
             });
 
             sessions.set(botId, sock);
