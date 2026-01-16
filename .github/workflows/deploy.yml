@@ -1,62 +1,13 @@
-name: Deploy Sentinel
+name: Deploy Sentinel (Native)
 
 on:
   push:
     branches: [ "main" ]
 
-permissions:
-  contents: read
-  packages: write
-
 jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and Push App
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository }}/app:latest
-
-      - name: Build and Push Frontend
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: docker/frontend.Dockerfile
-          push: true
-          tags: ghcr.io/${{ github.repository }}/frontend:latest
-          build-args: |
-            PUBLIC_API_URL=https://api-sentinel.angelviajero.com.mx
-          no-cache: true
-
   deploy:
-    needs: build-and-push
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Copy docker-compose
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
-          source: "docker/docker-compose.yml"
-          target: "/root/sentinel"
-          strip_components: 1
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -65,33 +16,31 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           port: ${{ secrets.VPS_PORT }}
           script: |
-            cd /root/sentinel
-            
-            # Create .env
-            echo "DATABASE_URL=postgresql://user:${{ secrets.DB_ROOT_PASSWORD }}@postgres:5432/sentinel" > .env
-            echo "DB_ROOT_PASSWORD=${{ secrets.DB_ROOT_PASSWORD }}" >> .env
-            echo "REDIS_URL=redis://redis:6379" >> .env
-            echo "APP_IMAGE=ghcr.io/${{ github.repository }}/app:latest" >> .env
-            echo "FRONTEND_IMAGE=ghcr.io/${{ github.repository }}/frontend:latest" >> .env
-            echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-            echo "SUPER_ADMIN_EMAIL=${{ secrets.SUPER_ADMIN_EMAIL }}" >> .env
-            echo "SUPER_ADMIN_PASSWORD=${{ secrets.SUPER_ADMIN_PASSWORD }}" >> .env
-            echo "ENCRYPTION_KEY=${{ secrets.ENCRYPTION_KEY }}" >> .env
-            echo "API_DOMAIN=api-sentinel.angelviajero.com.mx" >> .env
-            echo "APP_DOMAIN=app.angelviajero.com.mx" >> .env
-            
-            echo ${{ secrets.GH_PAT }} | docker login ghcr.io -u eddndev --password-stdin
-            
-            docker compose pull
-            docker compose up -d --remove-orphans
-            
-            # Migrations - Using entrypoint override to verify schema
-            docker compose run --rm --entrypoint "bunx prisma migrate deploy" app
+            set -e
 
-            # Seed - Ensure Super Admin exists
-            docker compose run --rm --entrypoint "bun run prisma/seed.ts" app
+            echo "Starting Deployment..."
             
-            # Restart app to ensure it picks up the schema (and recovers if it crashed)
-            docker compose restart app
+            cd /var/www/sentinel
+
+            echo "Pulling latest code..."
+            git fetch --all
+            git reset --hard origin/main
+
+            echo "Building Backend..."
+            cd backend
+            bun install --production
+            bunx prisma migrate deploy
+            bun run build
             
-            docker image prune -f
+            echo "Building Frontend..."
+            cd ../frontend
+            bun install
+            # Ensure PUBLIC_API_URL is set if needed for the build
+            export PUBLIC_API_URL="https://api-sentinel.angelviajero.com.mx"
+            bun run build
+            
+            echo "Restarting PM2..."
+            cd ..
+            pm2 startOrReload ecosystem.config.cjs
+
+            echo "Deployment Complete!"
