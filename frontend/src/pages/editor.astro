@@ -421,8 +421,8 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                                         rows="1" 
                                                                         class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
                                                                         :placeholder="branch.type === 'TEXT' ? $t('message_content') : $t('caption_placeholder')" 
-                                                                        x-init="setTimeout(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' }, 50)"
-                                                                        @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"></textarea>
+                                                                        x-init="setTimeout(() => resizeTextarea($el), 50)"
+                                                                        @input="resizeTextarea($el)"></textarea>
                                                                     
                                                                     <div x-show="branch.type !== 'TEXT'" class="flex gap-2">
                                                                         <input type="text" x-model="branch.mediaUrl" class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono" :placeholder="$t('media_url_placeholder')">
@@ -454,8 +454,8 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                                     rows="1" 
                                                                     class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
                                                                     :placeholder="$t('message_content')" 
-                                                                    x-init="setTimeout(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' }, 50)"
-                                                                    @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"></textarea>
+                                                                    x-init="setTimeout(() => resizeTextarea($el), 50)"
+                                                                    @input="resizeTextarea($el)"></textarea>
                                                                 <div x-show="step.metadata.fallback.type !== 'TEXT'" class="flex gap-2 mt-2">
                                                                     <input type="text" x-model="step.metadata.fallback.mediaUrl" class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono" :placeholder="$t('media_url_placeholder')">
                                                                     <button @click="selectMediaForFallback(index)" class="bg-white/10 px-2 text-[10px] uppercase hover:bg-white/20" x-text="$t('pick')"></button>
@@ -595,6 +595,11 @@ import MediaPicker from "../components/MediaPicker.astro";
                     if (ranges[i].end > ranges[i + 1].start) return true;
                 }
                 return false;
+            },
+
+            resizeTextarea(el: HTMLElement) {
+                el.style.height = 'auto';
+                el.style.height = (el.scrollHeight + 2) + 'px';
             },
 
             async init() {
