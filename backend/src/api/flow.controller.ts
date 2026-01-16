@@ -49,7 +49,8 @@ export const flowController = new Elysia({ prefix: "/flows" })
                             mediaUrl: s.mediaUrl,
                             delayMs: s.delayMs || 1000,
                             jitterPct: s.jitterPct ?? 10,
-                            order: index
+                            order: index,
+                            metadata: s.metadata ?? undefined
                         }))
                     },
                     triggers: {
@@ -90,11 +91,11 @@ export const flowController = new Elysia({ prefix: "/flows" })
                                 type: (s.type as StepType),
                                 content: s.content,
                                 mediaUrl: s.mediaUrl,
-                                delayMs: s.delayMs || 1000,
-                                jitterPct: s.jitterPct ?? 10,
-                                order: index
-                            }))
-                        },
+                                                            delayMs: s.delayMs || 1000,
+                                                            jitterPct: s.jitterPct ?? 10,
+                                                            order: index,
+                                                            metadata: s.metadata ?? undefined
+                                                        }))                        },
                         triggers: {
                             create: (triggers || []).map((t: any) => ({
                                 keyword: t.keyword,
@@ -155,7 +156,8 @@ export const flowController = new Elysia({ prefix: "/flows" })
                             mediaUrl: s.mediaUrl,
                             delayMs: s.delayMs,
                             jitterPct: s.jitterPct,
-                            order: s.order
+                            order: s.order,
+                            metadata: s.metadata ?? undefined
                         }))
                     },
                     triggers: {
