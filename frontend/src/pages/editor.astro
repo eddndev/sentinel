@@ -418,10 +418,10 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                                 <div class="space-y-2">
                                                                     <textarea 
                                                                         x-model="branch.content" 
-                                                                        rows="1" 
+                                                                        rows="2" 
                                                                         class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
                                                                         :placeholder="branch.type === 'TEXT' ? $t('message_content') : $t('caption_placeholder')" 
-                                                                        x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                                                        x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' }); setTimeout(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' }, 100)"
                                                                         @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"></textarea>
                                                                     
                                                                     <div x-show="branch.type !== 'TEXT'" class="flex gap-2">
@@ -451,10 +451,10 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                                 </div>
                                                                 <textarea 
                                                                     x-model="step.metadata.fallback.content" 
-                                                                    rows="1" 
+                                                                    rows="2" 
                                                                     class="w-full bg-black/20 border border-white/5 p-2 text-xs focus:border-brand-purple focus:outline-none resize-none overflow-hidden min-h-[38px] font-mono" 
                                                                     :placeholder="$t('message_content')" 
-                                                                    x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                                                    x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' }); setTimeout(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' }, 100)"
                                                                     @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"></textarea>
                                                                 <div x-show="step.metadata.fallback.type !== 'TEXT'" class="flex gap-2 mt-2">
                                                                     <input type="text" x-model="step.metadata.fallback.mediaUrl" class="flex-1 bg-black/20 border border-white/5 p-2 text-xs font-mono" :placeholder="$t('media_url_placeholder')">
