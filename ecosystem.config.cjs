@@ -4,6 +4,7 @@ module.exports = {
       name: "sentinel-backend",
       cwd: "./backend",
       script: "./dist/index.js",
+      interpreter: "bun", // Force Bun interpreter
       instances: 1,
       autorestart: true,
       watch: false,
