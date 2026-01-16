@@ -34,6 +34,7 @@ jobs:
             cd backend
             bun install --production
             bunx prisma migrate deploy
+            bun run prisma/seed.ts
             bun run build
             
             echo "Building Frontend..."
