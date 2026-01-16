@@ -323,8 +323,10 @@ import MediaPicker from "../components/MediaPicker.astro";
                                             <textarea
                                                 x-model="step.content"
                                                 rows="2"
-                                                class="w-full bg-black/20 border border-white/5 p-2 text-sm focus:border-brand-purple focus:outline-none resize-none"
+                                                class="w-full bg-black/20 border border-white/5 p-2 text-sm focus:border-brand-purple focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[60px]"
                                                 :placeholder="$t('message_content')"
+                                                x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                                @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
                                             ></textarea>
                                         </template>
 
