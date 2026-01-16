@@ -751,6 +751,19 @@ const botId = Astro.url.searchParams.get("id") || "";
                         />
                     </div>
 
+                    <div>
+                        <label
+                            class="block text-xs text-gray-400 font-mono uppercase mb-2"
+                        >IPv6 Address (Optional)</label>
+                        <input
+                            type="text"
+                            x-model="editForm.ipv6Address"
+                            class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white font-mono"
+                            placeholder="2605:a140:..."
+                        />
+                        <p class="text-[10px] text-gray-600 mt-1">Leave empty to use default system IP.</p>
+                    </div>
+
                     <div class="flex gap-4 pt-4">
                         <button
                             type="button"
@@ -786,6 +799,7 @@ const botId = Astro.url.searchParams.get("id") || "";
         identifier: string;
         platform: "WHATSAPP" | "TELEGRAM" | "INSTAGRAM";
         userId: string;
+        ipv6Address?: string;
     }
 
     interface Trigger {
@@ -844,6 +858,7 @@ const botId = Astro.url.searchParams.get("id") || "";
             editForm: {
                 name: "",
                 identifier: "",
+                ipv6Address: "",
             },
 
             // Logs State
@@ -924,6 +939,7 @@ const botId = Astro.url.searchParams.get("id") || "";
             editBot() {
                 this.editForm.name = this.bot.name;
                 this.editForm.identifier = this.bot.identifier;
+                this.editForm.ipv6Address = this.bot.ipv6Address || "";
                 this.showEditModal = true;
             },
 
@@ -936,6 +952,7 @@ const botId = Astro.url.searchParams.get("id") || "";
                         name: this.editForm.name,
                         identifier: this.editForm.identifier,
                         platform: this.bot.platform,
+                        ipv6Address: this.editForm.ipv6Address || null,
                     });
                     this.bot = updated;
                     this.showEditModal = false;

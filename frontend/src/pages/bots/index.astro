@@ -235,6 +235,18 @@ import Layout from "../../layouts/Layout.astro";
 					</select>
 				</div>
 
+				<div>
+					<label
+						class="block text-xs text-gray-400 font-mono uppercase mb-2"
+						>IPv6 Address (Optional)</label>
+					<input
+						type="text"
+						x-model="form.ipv6Address"
+						class="w-full bg-black/30 border border-white/10 p-3 text-sm focus:border-brand-purple focus:outline-none text-white font-mono"
+						placeholder="2605:a140:..."
+					/>
+				</div>
+
 				<div class="flex gap-4 pt-4">
 					<button
 						type="button"
@@ -266,6 +278,7 @@ import Layout from "../../layouts/Layout.astro";
 		name: string;
 		identifier: string;
 		platform: "WHATSAPP" | "TELEGRAM";
+		ipv6Address?: string;
 	}
 
 	interface Bot {
@@ -326,11 +339,12 @@ import Layout from "../../layouts/Layout.astro";
 				name: "",
 				identifier: "",
 				platform: "WHATSAPP",
+				ipv6Address: "",
 			} as CreateBotForm,
 
 			open() {
 				this.visible = true;
-				this.form = { name: "", identifier: "", platform: "WHATSAPP" };
+				this.form = { name: "", identifier: "", platform: "WHATSAPP", ipv6Address: "" };
 			},
 
 			close() {

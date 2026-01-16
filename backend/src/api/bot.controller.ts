@@ -13,7 +13,7 @@ export const botController = new Elysia({ prefix: "/bots" })
     })
     // Create bot
     .post("/", async ({ body, set }) => {
-        const { name, platform, identifier } = body as any;
+        const { name, platform, identifier, ipv6Address } = body as any;
 
         if (!name || !identifier) {
             set.status = 400;
@@ -26,6 +26,7 @@ export const botController = new Elysia({ prefix: "/bots" })
                     name,
                     platform: (platform as Platform) || Platform.WHATSAPP,
                     identifier,
+                    ipv6Address,
                     credentials: {}
                 }
             });
@@ -41,7 +42,8 @@ export const botController = new Elysia({ prefix: "/bots" })
         body: t.Object({
             name: t.String(),
             identifier: t.String(),
-            platform: t.Optional(t.String())
+            platform: t.Optional(t.String()),
+            ipv6Address: t.Optional(t.String())
         })
     })
     // Baileys Management
@@ -93,7 +95,7 @@ export const botController = new Elysia({ prefix: "/bots" })
         return bot;
     })
     .put("/:id", async ({ params: { id }, body, set }) => {
-        const { name, identifier, platform, credentials } = body as any;
+        const { name, identifier, platform, credentials, ipv6Address } = body as any;
 
         try {
             const bot = await prisma.bot.update({
@@ -102,7 +104,8 @@ export const botController = new Elysia({ prefix: "/bots" })
                     name,
                     identifier,
                     platform: platform as Platform,
-                    credentials: credentials || undefined
+                    credentials: credentials || undefined,
+                    ipv6Address
                 }
             });
             return bot;
