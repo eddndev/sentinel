@@ -370,12 +370,14 @@ import MediaPicker from "../components/MediaPicker.astro";
                                                 <template
                                                     x-if="step.type === 'IMAGE'"
                                                 >
-                                                    <input
-                                                        type="text"
+                                                    <textarea
                                                         x-model="step.content"
-                                                        class="w-full bg-black/20 border border-white/5 p-2 text-xs mt-1"
+                                                        rows="1"
+                                                        class="w-full bg-black/20 border border-white/5 p-2 text-xs mt-1 focus:border-brand-purple focus:outline-none resize-none overflow-hidden font-mono leading-relaxed min-h-[38px]"
                                                         :placeholder="$t('caption_placeholder')"
-                                                    />
+                                                        x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                                        @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                                    ></textarea>
                                                 </template>
                                             </div>
                                         </template>
