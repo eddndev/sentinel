@@ -169,41 +169,49 @@ import MediaPicker from "../components/MediaPicker.astro";
                             <div
                                 class="bg-[#0f172a] p-4 border border-white/10 space-y-3"
                             >
-                                <!-- Row 1: Match Type + Keyword + Delete -->
-                                <div class="flex gap-3 items-center">
-                                    <select
-                                        x-model="trigger.scope"
-                                        class="bg-white/10 text-[10px] font-mono text-brand-purple px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple"
-                                        title="Trigger Scope"
-                                    >
-                                        <option value="INCOMING">IN</option>
-                                        <option value="OUTGOING">OUT</option>
-                                        <option value="BOTH">ALL</option>
-                                    </select>
-                                    <select
-                                        x-model="trigger.matchType"
-                                        class="bg-white/10 text-xs font-mono text-white px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple"
-                                    >
-                                        <template
-                                            x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
+                                <!-- Row 1: Selects and Delete -->
+                                <div class="flex justify-between items-center gap-2">
+                                    <div class="flex gap-2 items-center flex-1">
+                                        <select
+                                            x-model="trigger.scope"
+                                            class="bg-white/10 text-[10px] font-mono text-brand-purple px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple flex-1"
+                                            title="Trigger Scope"
                                         >
-                                            <option
-                                                :value="opt"
-                                                x-text="opt"
-                                                class="bg-[#0f172a]"></option>
-                                        </template>
-                                    </select>
-                                    <input
-                                        type="text"
-                                        x-model="trigger.keyword"
-                                        class="bg-white/5 text-sm flex-1 px-3 py-1.5 border border-white/10 focus:outline-none focus:border-brand-purple"
-                                        :placeholder="$t('keyword')"
-                                    />
+                                            <option value="INCOMING">INCOMING</option>
+                                            <option value="OUTGOING">OUTGOING</option>
+                                            <option value="BOTH">ALL</option>
+                                        </select>
+                                        <select
+                                            x-model="trigger.matchType"
+                                            class="bg-white/10 text-xs font-mono text-white px-2 py-1.5 border border-white/20 focus:outline-none focus:border-brand-purple flex-1"
+                                        >
+                                            <template
+                                                x-for="opt in ['CONTAINS', 'EXACT', 'REGEX']"
+                                            >
+                                                <option
+                                                    :value="opt"
+                                                    x-text="opt"
+                                                    class="bg-[#0f172a]"></option>
+                                            </template>
+                                        </select>
+                                    </div>
                                     <button
                                         @click="removeTrigger(index)"
-                                        class="text-red-500 hover:text-red-400 font-bold px-3 py-1 text-lg"
+                                        class="text-red-500 hover:text-red-400 font-bold px-2 py-1 text-lg"
                                         >&times;</button
                                     >
+                                </div>
+
+                                <!-- Row 2: Keyword Input -->
+                                <div>
+                                    <textarea
+                                        x-model="trigger.keyword"
+                                        rows="1"
+                                        class="w-full bg-white/5 text-sm px-3 py-2 border border-white/10 focus:outline-none focus:border-brand-purple resize-none overflow-hidden font-mono leading-relaxed"
+                                        :placeholder="$t('keyword') || 'Enter keyword or regex...'"
+                                        x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                        @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                    ></textarea>
                                 </div>
                             </div>
                         </template>
