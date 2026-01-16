@@ -4,50 +4,47 @@ import { authMiddleware } from "../middleware/auth.middleware";
 
 export const authController = new Elysia({ prefix: "/auth" })
     .use(authMiddleware)
-    .post("/login", async ({ body, jwt, cookie: { auth_token }, error }) => {
-        const { email, password } = body;
-        const user = await AuthService.validateUser(email, password);
+    .post("/login", async ({ body, jwt, set }) => {
+        try {
+            const { email, password } = body as any;
 
-        if (!user) {
-            return error(401, "Invalid credentials");
-        }
+            const user = await AuthService.validateUser(email, password);
 
-        // Generate Token
-        auth_token.set({
-            value: await jwt.sign({ id: user.id, role: user.role }),
-            httpOnly: true,
-            maxAge: 7 * 86400, // 7 Days
-            path: "/",
-            secure: true, // Required for SameSite=None
-            sameSite: "none" // Required due to different domains (api vs app)
-        });
+            if (!user) {
+                set.status = 401;
+                return { error: "Invalid credentials" };
+            }
 
-        return {
-            success: true,
-            user: {
+            const token = await jwt.sign({
                 id: user.id,
                 email: user.email,
-                role: user.role,
-                fullName: user.fullName
-            }
-        };
-    }, {
-        body: t.Object({
-            email: t.String(),
-            password: t.String()
-        })
+                role: "ADMIN" // Simplified role for now
+            });
+
+            return {
+                token,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    fullName: user.fullName
+                }
+            };
+        } catch (error) {
+            console.error("Login Error:", error);
+            set.status = 500;
+            return { error: "Internal Server Error" };
+        }
     })
     .post("/logout", ({ cookie: { auth_token } }) => {
         auth_token.remove();
         return { success: true };
     })
-    .get("/me", ({ user, error }) => {
-        if (!user) return error(401, "Not authenticated");
+    .get("/me", ({ user }) => {
         return {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            fullName: user.fullName
+            id: user!.id,
+            email: user!.email,
+            role: user!.role,
+            fullName: user!.fullName
         };
     }, {
         isSignIn: true // Uses our macro

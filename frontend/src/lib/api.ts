@@ -1,9 +1,20 @@
 const API_URL = import.meta.env.PUBLIC_API_URL || (import.meta.env.DEV ? "http://localhost:8080" : "https://api-sentinel.angelviajero.com.mx");
 
+const getHeaders = () => {
+    const headers: Record<string, string> = {
+        "Content-Type": "application/json"
+    };
+    const token = localStorage.getItem('token');
+    if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+    }
+    return headers;
+};
+
 export const ApiClient = {
     async get(endpoint: string) {
         const res = await fetch(`${API_URL}${endpoint}`, {
-            credentials: "include"
+            headers: getHeaders(),
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -15,9 +26,8 @@ export const ApiClient = {
     async post(endpoint: string, body: any) {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: getHeaders(),
             body: JSON.stringify(body),
-            credentials: "include"
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -29,9 +39,8 @@ export const ApiClient = {
     async put(endpoint: string, body: any) {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: getHeaders(),
             body: JSON.stringify(body),
-            credentials: "include"
         });
         if (!res.ok) {
             const data = await res.json().catch(() => ({}));
@@ -43,7 +52,7 @@ export const ApiClient = {
     async delete(endpoint: string) {
         const res = await fetch(`${API_URL}${endpoint}`, {
             method: "DELETE",
-            credentials: "include"
+            headers: getHeaders(),
         });
         if (!res.ok) throw new Error(`API Error: ${res.statusText}`);
         return res.json();
@@ -52,11 +61,17 @@ export const ApiClient = {
     async uploadFile(file: File) {
         const formData = new FormData();
         formData.append("file", file);
+        
+        const headers: Record<string, string> = {};
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers["Authorization"] = `Bearer ${token}`;
+        }
 
         const res = await fetch(`${API_URL}/upload`, {
             method: "POST",
+            headers: headers,
             body: formData,
-            credentials: "include"
         });
 
         if (!res.ok) {

@@ -54,8 +54,14 @@ import { triggerController } from "./api/trigger.controller";
 import { executionController } from "./api/execution.controller";
 import { authController } from "./api/auth.controller";
 import { clientRoutes } from "./api/client.routes";
+import { cors } from "@elysiajs/cors";
 
 const app = new Elysia()
+    .use(cors({
+        origin: true, // En desarrollo permite todos, o puedes poner ['localhost:4321']
+        allowedHeaders: ['Content-Type', 'Authorization'],
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+    }))
     .use(webhookController)
     .use(uploadController)
     .use(flowController)

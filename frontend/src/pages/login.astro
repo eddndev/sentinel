@@ -115,7 +115,11 @@ import "../styles/global.css";
         </main>
 
         <script>
-            import { ApiClient } from "../lib/api";
+            import { ApiClient as api } from "../lib/api";
+            
+            // Auth Helpers
+            const setToken = (token: string) => localStorage.setItem('token', token);
+            const setUser = (user: any) => localStorage.setItem('user', JSON.stringify(user));
 
             document.addEventListener("alpine:init", () => {
                 Alpine.data("loginForm", () => ({
@@ -126,28 +130,34 @@ import "../styles/global.css";
 
                     async submit() {
                         this.loading = true;
-                        this.errorMessage = "";
+                        this.errorMessage = ''; // Changed from this.error to match x-data
 
                         try {
-                            const response = await ApiClient.post(
-                                "/auth/login",
-                                {
-                                    email: this.email,
-                                    password: this.password,
-                                },
-                            );
+                            console.log('Attempting login with:', this.email);
+                            const response = await api.post('/auth/login', {
+                                email: this.email,
+                                password: this.password
+                            });
+                            
+                            console.log('Login response:', response);
 
-                            if (response.success) {
-                                window.location.href = "/";
+                            if (response.token) {
+                                console.log('Token received, storing...');
+                                setToken(response.token);
+                                setUser(response.user);
+                                console.log('Redirecting to /...');
+                                window.location.href = '/'; 
+                            } else {
+                                console.error('No token in response');
+                                this.errorMessage = 'Login failed: No token received';
                             }
-                        } catch (e) {
-                            console.error(e);
-                            this.errorMessage =
-                                "ACCESS DENIED: Invalid credentials";
+                        } catch (err) {
+                            console.error('Login error catch:', err);
+                            this.errorMessage = err instanceof Error ? err.message : 'Login failed';
                         } finally {
                             this.loading = false;
                         }
-                    },
+                    }
                 }));
             });
         </script>
