@@ -4,6 +4,18 @@ import { Platform } from "@prisma/client";
 import { BaileysService } from "../services/baileys.service";
 import { authMiddleware } from "../middleware/auth.middleware";
 
+// Configuration
+const IPV6_SUBNET_PREFIX = "2605:a140:2302:3245";
+
+/**
+ * Generates a random IPv6 address within the configured /64 subnet.
+ * Format: PREFIX:XXXX:XXXX:XXXX:XXXX
+ */
+function generateRandomIPv6(): string {
+    const segment = () => Math.floor(Math.random() * 0xffff).toString(16);
+    return `${IPV6_SUBNET_PREFIX}:${segment()}:${segment()}:${segment()}:${segment()}`;
+}
+
 export const botController = new Elysia({ prefix: "/bots" })
     .use(authMiddleware)
     .guard({ isSignIn: true })
@@ -13,7 +25,7 @@ export const botController = new Elysia({ prefix: "/bots" })
     })
     // Create bot
     .post("/", async ({ body, set }) => {
-        const { name, platform, identifier, ipv6Address } = body as any;
+        const { name, platform, identifier } = body as any;
 
         if (!name || !identifier) {
             set.status = 400;
@@ -21,12 +33,15 @@ export const botController = new Elysia({ prefix: "/bots" })
         }
 
         try {
+            // Auto-assign IPv6
+            const assignedIPv6 = generateRandomIPv6();
+
             const bot = await prisma.bot.create({
                 data: {
                     name,
                     platform: (platform as Platform) || Platform.WHATSAPP,
                     identifier,
-                    ipv6Address,
+                    ipv6Address: assignedIPv6,
                     credentials: {}
                 }
             });
@@ -43,7 +58,7 @@ export const botController = new Elysia({ prefix: "/bots" })
             name: t.String(),
             identifier: t.String(),
             platform: t.Optional(t.String()),
-            ipv6Address: t.Optional(t.String())
+            // ipv6Address removed from input validation as it is auto-generated
         })
     })
     // Baileys Management
