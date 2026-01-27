@@ -130,6 +130,8 @@ model Flow {
   usageLimit  Int       @default(0)
   cooldownMs  Int       @default(0)
   
+  excludesFlows String[] @default([]) // List of Flow IDs that, if executed previously in the session, block this flow.
+
   steps       Step[]
   triggers    Trigger[]
   executions  Execution[]

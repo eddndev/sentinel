@@ -85,9 +85,9 @@ import MediaPicker from "../components/MediaPicker.astro";
                         <h4
                             class="text-[10px] text-gray-500 uppercase font-mono mb-2"
                         >
-                            Flow Limits
+                            Flow Limits & Rules
                         </h4>
-                        <div class="flex gap-4">
+                        <div class="flex gap-4 mb-3">
                             <div class="flex-1">
                                 <label
                                     class="block text-[10px] text-gray-400 font-mono mb-1"
@@ -159,6 +159,21 @@ import MediaPicker from "../components/MediaPicker.astro";
                                 </select>
                             </div>
                         </div>
+
+                        <!-- Mutual Exclusions -->
+                         <div x-show="availableFlows.length > 0">
+                            <label class="block text-[10px] text-gray-400 font-mono mb-2" title="If any of these flows have run in the session, this flow will NOT run.">
+                                MUTUALLY EXCLUSIVE WITH:
+                            </label>
+                            <div class="max-h-32 overflow-y-auto space-y-1 pr-1 bg-black/20 p-2 border border-white/5">
+                                <template x-for="f in availableFlows" :key="f.id">
+                                    <label class="flex items-center gap-2 cursor-pointer hover:bg-white/5 p-1 rounded">
+                                        <input type="checkbox" :value="f.id" x-model="flow.excludesFlows" class="accent-brand-purple">
+                                        <span class="text-[10px] font-mono text-gray-300 truncate" x-text="f.name"></span>
+                                    </label>
+                                </template>
+                            </div>
+                         </div>
                     </div>
 
                     <div class="space-y-3">
@@ -529,6 +544,7 @@ import MediaPicker from "../components/MediaPicker.astro";
         description: string;
         usageLimit: number;
         cooldownMs: number;
+        excludesFlows: string[];
         triggers: Trigger[];
         steps: Step[];
     }
@@ -538,6 +554,7 @@ import MediaPicker from "../components/MediaPicker.astro";
             id: null as string | null,
             ready: false,
             saving: false,
+            availableFlows: [] as { id: string; name: string }[],
             bot: { id: null } as {
                 id: string | null;
                 platform?: string;
@@ -548,6 +565,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                 description: "",
                 usageLimit: 0,
                 cooldownMs: 0,
+                excludesFlows: [],
                 triggers: [],
                 steps: [],
             } as Flow,
@@ -699,9 +717,23 @@ import MediaPicker from "../components/MediaPicker.astro";
                         }
                     }
                     this.ready = true;
+                    this.loadAvailableFlows();
                 } catch (e) {
                     alert("Failed to load flow");
                     window.location.href = "/bots";
+                }
+            },
+            
+            async loadAvailableFlows() {
+                if (!this.botId) return;
+                try {
+                    // Fetch all flows for this bot to populate the exclusion list
+                    // We need a lightweight list. Assuming /flows?botId=... returns list
+                    const flows = await ApiClient.get(`/flows?botId=${this.botId}`);
+                    // Filter out current flow
+                    this.availableFlows = flows.filter((f: any) => f.id !== this.id);
+                } catch (e) {
+                    console.error("Failed to load available flows", e);
                 }
             },
 

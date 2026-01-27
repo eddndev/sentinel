@@ -93,7 +93,21 @@ export class FlowEngine {
                         }
                     }
 
-                    // 4c. Create execution atomically (inside same transaction)
+                    // 4c. Validate Exclusions (Mutually Exclusive Flows)
+                    if (trigger.flow.excludesFlows && trigger.flow.excludesFlows.length > 0) {
+                        const conflictCount = await tx.execution.count({
+                            where: {
+                                sessionId,
+                                flowId: { in: trigger.flow.excludesFlows }
+                            }
+                        });
+
+                        if (conflictCount > 0) {
+                            throw new Error(`EXCLUDED: Mutually exclusive flow already executed.`);
+                        }
+                    }
+
+                    // 4d. Create execution atomically (inside same transaction)
                     console.log(`[FlowEngine] Matched Trigger '${trigger.keyword}' -> Flow ${trigger.flowId}`);
 
                     return await tx.execution.create({
@@ -122,6 +136,9 @@ export class FlowEngine {
                 } else if (error.message?.startsWith('LIMIT:')) {
                     console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: Usage limit reached (${error.message.replace('LIMIT:', '')})`);
                     errorMessage = `Usage limit reached (${error.message.replace('LIMIT:', '')})`;
+                } else if (error.message?.startsWith('EXCLUDED:')) {
+                    console.log(`[FlowEngine] Trigger '${trigger.keyword}' ignored: ${error.message}`);
+                    errorMessage = error.message;
                 } else {
                     console.error(`[FlowEngine] Error starting flow:`, error);
                 }
@@ -134,7 +151,7 @@ export class FlowEngine {
                 // Validation errors (limit/cooldown) are technically "ignored" triggers, not "failed" executions in the crash sense.
                 // But the user wants execution logs. Let's create a FAILED record if it was a limit issue, OUTSIDE the transaction.
 
-                if (['COOLDOWN:', 'LIMIT:'].some(p => error.message?.startsWith(p))) {
+                if (['COOLDOWN:', 'LIMIT:', 'EXCLUDED:'].some(p => error.message?.startsWith(p))) {
                     try {
                         await prisma.execution.create({
                             data: {
