@@ -42,6 +42,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
                     description,
                     usageLimit: parseInt(body.usageLimit || 0),
                     cooldownMs: parseInt(body.cooldownMs || 0),
+                    excludesFlows: body.excludesFlows || [],
                     steps: {
                         create: (steps || []).map((s: any, index: number) => ({
                             type: (s.type as StepType),
@@ -86,6 +87,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
                         description,
                         usageLimit: parseInt(body.usageLimit || 0),
                         cooldownMs: parseInt(body.cooldownMs || 0),
+                        excludesFlows: body.excludesFlows || [],
                         steps: {
                             create: (steps || []).map((s: any, index: number) => ({
                                 type: (s.type as StepType),
@@ -149,6 +151,7 @@ export const flowController = new Elysia({ prefix: "/flows" })
                     description: sourceFlow.description,
                     usageLimit: sourceFlow.usageLimit,
                     cooldownMs: sourceFlow.cooldownMs,
+                    excludesFlows: sourceFlow.excludesFlows || [],
                     steps: {
                         create: sourceFlow.steps.map(s => ({
                             type: s.type,

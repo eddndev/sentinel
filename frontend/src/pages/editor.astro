@@ -161,7 +161,7 @@ import MediaPicker from "../components/MediaPicker.astro";
                         </div>
 
                         <!-- Mutual Exclusions -->
-                         <div x-show="availableFlows.length > 0">
+                         <div x-show="availableFlows.length > 0 || true">
                             <label class="block text-[10px] text-gray-400 font-mono mb-2" title="If any of these flows have run in the session, this flow will NOT run.">
                                 MUTUALLY EXCLUSIVE WITH:
                             </label>
@@ -172,6 +172,9 @@ import MediaPicker from "../components/MediaPicker.astro";
                                         <span class="text-[10px] font-mono text-gray-300 truncate" x-text="f.name"></span>
                                     </label>
                                 </template>
+                                <div x-show="availableFlows.length === 0" class="text-[10px] text-gray-600 font-mono italic p-1">
+                                    (No other flows available)
+                                </div>
                             </div>
                          </div>
                     </div>
